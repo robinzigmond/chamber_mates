@@ -1,0 +1,40 @@
+body {
+    background-color: #1e85ae;
+    color: #cce;
+}
+
+a {
+    color: #aac;
+}
+
+.navbar-default {
+    background-color: skyblue;
+    color: #07212c;
+    border: 0;
+}
+
+.navbar-default .navbar-nav li.active a {
+    background-color: #1e85ae;
+    color: #cce;
+}
+
+.navbar-brand {
+    font-family: "Dancing Script", cursive;
+    font-size: 28px;
+}
+
+.media {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.media-row {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.media-flex {
+    margin: 10px;
+}

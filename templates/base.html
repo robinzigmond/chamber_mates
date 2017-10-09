@@ -27,12 +27,12 @@
                         <li {% if active == "home" %}class="active"{% endif %}><a href="{% url 'home' %}">Home</a></li>
                         <li {% if active == "why" %}class="active"{% endif %}><a href="{% url 'why' %}">Why Chamber Music?</a></li>
                         {% if user.is_authenticated %}
-                            <li {% if active == "profile" %}class="active"{% endif %}><a href="/profile/">Profile</a></li>
+                            <li {% if active == "profile" %}class="active"{% endif %}><a href="{% url 'profile' %}">Profile</a></li>
                             <li {% if active == "messages" %}class="active"{% endif %}><a href="/messages/">Messages</a></li>
-                            <li {% if active == "logout" %}class="active"{% endif %}><a href="/logout/">Logout</a></li>
+                            <li {% if active == "logout" %}class="active"{% endif %}><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
                         {% else %}
-                            <li {% if active == "register" %}class="active"{% endif %}><a href="/register/">Register</a></li>
-                            <li {% if active == "login" %}class="active"}{% endif %}><a href="/login/">Login</a></li>
+                            <li {% if active == "register" %}class="active"{% endif %}><a href="{% url 'register' %}">Register</a></li>
+                            <li {% if active == "login" %}class="active"}{% endif %}><a href="{% url 'login' %}">Login</a></li>
                         {% endif %}
                     </ul>
                 </div>

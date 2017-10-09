@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <p>Registration for Chamber Mates is really quick and simple! Please use the form below to get started.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <form role="form" method="post" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Register account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

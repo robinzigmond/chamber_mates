@@ -16,9 +16,14 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from home import views as home_views
+from accounts import views as accounts_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r"^$", home_views.home, name="home"),
-    url(r"^why/$", home_views.why, name="why")
+    url(r"^why/$", home_views.why, name="why"),
+    url(r"^register/$", accounts_views.register, name="register"),
+    url(r"^logout/$", accounts_views.logout, name="logout"),
+    url(r"^profile/$", accounts_views.profile, name="profile"),
+    url(r"^login/$", accounts_views.login, name="login")
 ]

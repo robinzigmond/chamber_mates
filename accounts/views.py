@@ -61,13 +61,10 @@ def login(request):
     A view to handle the login page and form
     """
     if request.method=="POST":
-        print request.POST
-        form = AuthenticationForm(request.POST)
+        form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            form.save()
             user = auth.authenticate(username=request.POST.get("username"),
                                      password=request.POST.get("password"))
-
             if user:
                 auth.login(request, user)
                 return redirect(reverse("profile"))

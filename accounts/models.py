@@ -72,4 +72,4 @@ class UserInstrument(models.Model):
     accepted_standards = models.ManyToManyField(Standard, related_name="user_wanting")
 
     def __unicode__(self):
-        return {"user": self.user.username, "instrument": self.instrument}
+        return "%s, %s" %(self.user.username, self.instrument)

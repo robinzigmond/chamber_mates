@@ -5,9 +5,11 @@ from django.shortcuts import render, redirect
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.template.context_processors import csrf
-from .forms import UserRegistrationForm
+from .forms import UserRegistrationForm, ProfileForm
+from .models import Profile, UserInstrument
 
 # Create your views here.
 def register(request):
@@ -50,10 +52,27 @@ def logout(request):
 @login_required(login_url=reverse_lazy("login"))
 def profile(request):
     """
-    simple view to display the user's profile page, and distinguish whether the user has just
-    registered or not
+    simple view to display the user's profile page, and distinguish whether the user has completed
+    their profile to the minimum standard required to be useful. If not, they are prompted to fill
+    it out
     """
-    return render(request, "accounts/profile.html", {"active": "profile"})
+    user_id = User.objects.get(username=request.user.username).pk
+    try:
+        user_profile = Profile.objects.get(user=user_id)
+        num_instruments = UserInstrument.filter(user=user_id)
+        complete = user_profile.location and user_profile.maxdistance and num_instruments > 0
+    except Profile.DoesNotExist:
+        complete = False
+    
+    if request.method=="POST":
+        form = ProfileForm(request.POST)
+        # logic for validating data and adding to database will go here!
+    else:
+        form = ProfileForm()
+
+    args = {"active": "profile", "incomplete_profile": not complete, "form": form}
+    args.update(csrf(request))
+    return render(request, "accounts/profile.html", args)
 
 
 def login(request):

@@ -1,14 +1,27 @@
 {% extends "base.html" %}
+
+{% block load_media %}
+    {{ form.media }}
+{% endblock %}
+
 {% block content %}
     <div class="container">
         <div class="row">
-            {% if new %}
-                <div class="col-xs-12">
-                    <strong>Thank you for registering, now please update your profile information via the link below.</strong>
-                </div>
-            {% endif %}
             <div class="col-xs-12">
-                <p>Welcome to your awesome profile page - which is still under construction...</p>
+                <h2>Welcome back, {{ user.username }}!</h2>
+                {% if incomplete_profile %}
+                    <p>Please complete your profile with location and instrument information. We'll use this
+                    information to match you up with the players you want in your local area!</p>
+                {% endif %}
+           </div>
+            <div class="col-xs-12">
+                <form role="form" action="" method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

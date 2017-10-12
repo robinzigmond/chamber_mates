@@ -21,17 +21,15 @@ class Profile(models.Model):
     """
     This model will contain all of a user's key information, apart from what is required for
     authentication (username, password and email). The fields are:
-    - location (will be entered by the user as a string, but stored in the DB as a
-    longitude/latitute pair.
-    (The Google Maps API will do the conversion, on form submission.)
+    - location
     - max_distance: An integer denoting the maximum distance (in miles) from their location
     that a user wishes to go to make contact with another user. Uses one of the values in
     the Distances model.
     We also of course use a OneToOneField to link it to a specific user!
     """
     user = models.OneToOneField(User)
-    location = models.PointField()
-    max_distance = models.ForeignKey(Distance)
+    location = models.PointField(verbose_name="your location")
+    max_distance = models.ForeignKey(Distance, verbose_name="find me players within this distance (miles)")
 
     def __unicode__(self):
         return self.user.username

@@ -1,5 +1,8 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.gis import forms
+from .models import Profile, UserInstrument
+from mapwidgets.widgets import GooglePointFieldWidget
 
 class UserRegistrationForm(UserCreationForm):
     """
@@ -9,3 +12,21 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+
+
+class ProfileForm(forms.ModelForm):
+    """
+    The form for a user to fill out their basic profile information (location,
+    and maximum distance they are willing to travel)
+    """
+    
+    # make the max_distance ForeignKey field have no "blank" option in the form:
+    def __init__(self, *args, **kwargs):
+        super(ProfileForm, self).__init__(*args, **kwargs)
+        self.base_fields["max_distance"].empty_label = None
+
+    class Meta:
+        model = Profile
+        fields = ["location", "max_distance"]
+        widgets = {"location": GooglePointFieldWidget,
+                   "max_distance": forms.RadioSelect}

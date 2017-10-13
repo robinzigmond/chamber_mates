@@ -1,8 +1,8 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.gis import forms
-from .models import Profile, UserInstrument
 from mapwidgets.widgets import GooglePointFieldWidget
+from .models import Profile, UserInstrument
 
 class UserRegistrationForm(UserCreationForm):
     """
@@ -24,7 +24,6 @@ class ProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
         self.base_fields["max_distance"].empty_label = None
-    
         self.fields["max_distance"].widget.choices = self.fields["max_distance"].choices
 
     class Meta:

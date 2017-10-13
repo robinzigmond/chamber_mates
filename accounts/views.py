@@ -8,6 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.template.context_processors import csrf
+from django.db import IntegrityError
 from .forms import UserRegistrationForm, ProfileForm
 from .models import Profile, UserInstrument
 
@@ -52,14 +53,14 @@ def logout(request):
 @login_required(login_url=reverse_lazy("login"))
 def profile(request):
     """
-    simple view to display the user's profile page, and distinguish whether the user has completed
+    view to display the user's profile page, and distinguish whether the user has completed
     their profile to the minimum standard required to be useful. If not, they are prompted to fill
     it out
     """
     user_id = User.objects.get(username=request.user.username).pk
     try:
         user_profile = Profile.objects.get(user=user_id)
-        num_instruments = UserInstrument.objects.filter(user=user_id)
+        num_instruments = UserInstrument.objects.filter(user=user_id).count()
         complete = user_profile.location and user_profile.max_distance and num_instruments > 0
     except Profile.DoesNotExist:
         complete = False
@@ -68,16 +69,29 @@ def profile(request):
         form = ProfileForm(request.POST)
         
         if form.is_valid():
-            print "data OK so far"
-            print form["location"].value()
-            print form["max_distance"].value()
             details = form.save(False)
             details.user = request.user
-            details.save()
+            try:
+                details.save()
+            except IntegrityError:
+                # this happens if the user already exists (because only one profile is allowed per user)
+                # In other words, the user wants to update their profile. We allow this by specifying
+                # the primary key when saving the model
+                user_id = User.objects.get(username=request.user.username).pk
+                details.pk = Profile.objects.get(user=user_id).pk
+                details.save()
         else:
             messages.error(request, "Please correct the following errors:")
     else:
-        form = ProfileForm()
+        # display the user's current details, if they exist
+        try:
+            user_profile = Profile.objects.get(user=user_id)
+            location = user_profile.location or None
+            max_dist = user_profile.max_distance or None
+            data = {"location": location, "max_distance": max_dist}
+            form = ProfileForm(data)
+        except Profile.DoesNotExist:
+            form = ProfileForm()
 
     args = {"active": "profile", "incomplete_profile": not complete, "form": form}
     args.update(csrf(request))

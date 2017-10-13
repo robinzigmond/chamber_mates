@@ -24,6 +24,8 @@ class ProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
         self.base_fields["max_distance"].empty_label = None
+    
+        self.fields["max_distance"].widget.choices = self.fields["max_distance"].choices
 
     class Meta:
         model = Profile

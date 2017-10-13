@@ -59,14 +59,23 @@ def profile(request):
     user_id = User.objects.get(username=request.user.username).pk
     try:
         user_profile = Profile.objects.get(user=user_id)
-        num_instruments = UserInstrument.filter(user=user_id)
-        complete = user_profile.location and user_profile.maxdistance and num_instruments > 0
+        num_instruments = UserInstrument.objects.filter(user=user_id)
+        complete = user_profile.location and user_profile.max_distance and num_instruments > 0
     except Profile.DoesNotExist:
         complete = False
     
     if request.method=="POST":
         form = ProfileForm(request.POST)
-        # logic for validating data and adding to database will go here!
+        
+        if form.is_valid():
+            print "data OK so far"
+            print form["location"].value()
+            print form["max_distance"].value()
+            details = form.save(False)
+            details.user = request.user
+            details.save()
+        else:
+            messages.error(request, "Please correct the following errors:")
     else:
         form = ProfileForm()
 

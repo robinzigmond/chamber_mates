@@ -23,7 +23,7 @@ class ProfileForm(forms.ModelForm):
     # make the max_distance ForeignKey field have no "blank" option in the form:
     def __init__(self, *args, **kwargs):
         super(ProfileForm, self).__init__(*args, **kwargs)
-        self.base_fields["max_distance"].empty_label = None
+        self.fields["max_distance"].empty_label = None
         self.fields["max_distance"].widget.choices = self.fields["max_distance"].choices
 
     class Meta:

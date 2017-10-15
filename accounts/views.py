@@ -89,7 +89,7 @@ def profile(request):
             location = user_profile.location or None
             max_dist = user_profile.max_distance or None
             data = {"location": location, "max_distance": max_dist}
-            form = ProfileForm(data)
+            form = ProfileForm(initial=data)
         except Profile.DoesNotExist:
             form = ProfileForm()
 

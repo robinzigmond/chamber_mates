@@ -44,10 +44,11 @@ class UserInstrumentForm(forms.ModelForm):
     """
     def __init__(self, *args, **kwargs):
         super(UserInstrumentForm, self).__init__(*args, **kwargs)
-        self.fields["desired_instruments"].empty_label = None
-        self.fields["desired_instruments"].widget.choices = self.fields["desired_instruments"].choices
-        self.fields["accepted_standards"].empty_label = None
-        self.fields["accepted_standards"].widget.choices = self.fields["accepted_standards"].choices
+        fields = ["instrument", "standard", "desired_instruments", "accepted_standards"]
+        for field in fields:
+            self.fields[field].empty_label = None
+            self.fields[field].widget.choices = self.fields[field].choices
+
 
     class Meta:
         model = UserInstrument

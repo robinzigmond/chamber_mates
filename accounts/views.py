@@ -76,34 +76,27 @@ def profile(request):
         instrument_forms = instrument_FormSet(request.POST)
         
         if baseform.is_valid() and instrument_forms.is_valid():
-            # update the user's instruments - first we need to delete the previous data:
-            # UserInstrument.objects.filter(user=user_id).delete()
-            # then add the new ones:
-            # for instrument_form in instrument_forms:
-            #     instr = instrument_form.save(False)
-            #     instr.user = request.user
-            #     instr.save()
-
             # save the non-instrument profile details (location and max_distance)
-            details = baseform.save(False)
+            details = baseform.save(commit=False)
             details.user = request.user
             # now the instrument details
-            instruments = instrument_forms.save(False)
+            instruments = instrument_forms.save(commit=False)
             for instr in instruments:
                 instr.user = request.user
             try:
                 details.save()
-                instruments.save()
-
             except IntegrityError:
                 # this happens if the user already exists (because only one profile is allowed per user)
                 # In other words, the user wants to update their profile. We allow this by specifying
                 # the primary key when saving the model
                 details.pk = Profile.objects.get(user=user_id).pk
                 details.save()
-                for instr in instruments:
-                    instr.pk = Profile.objects.get(user=user_id).pk
-                instruments.save()
+            
+            for instr in instruments:
+                instr.save()
+            # need to save many-to-many fields separately because Django loses this
+            # information when saving with commit=False:
+            instrument_forms.save_m2m()
             
         else:
             messages.error(request, "Please correct the following errors:")
@@ -115,7 +108,7 @@ def profile(request):
             instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.filter(user=user_id))
         except Profile.DoesNotExist:
             baseform = ProfileForm()
-            instrument_forms = instrument_FormSet(UserInstrument.objects.none())
+            instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.none())
 
     args = {"active": "profile", "incomplete_profile": not complete, "baseform": baseform,
             "instrument_forms": instrument_forms}

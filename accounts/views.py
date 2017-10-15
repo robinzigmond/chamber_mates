@@ -7,9 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.forms import modelformset_factory
 from django.template.context_processors import csrf
 from django.db import IntegrityError
-from .forms import UserRegistrationForm, ProfileForm
+from .forms import UserRegistrationForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument
 
 # Create your views here.
@@ -57,43 +58,67 @@ def profile(request):
     their profile to the minimum standard required to be useful. If not, they are prompted to fill
     it out
     """
-    user_id = User.objects.get(username=request.user.username).pk
+    this_user = User.objects.get(username=request.user.username)
+    user_id = this_user.pk
     try:
         user_profile = Profile.objects.get(user=user_id)
         num_instruments = UserInstrument.objects.filter(user=user_id).count()
         complete = user_profile.location and user_profile.max_distance and num_instruments > 0
+        blank_forms = 1 if num_instruments==0 else 0
     except Profile.DoesNotExist:
         complete = False
+        blank_forms = 1
+
+    instrument_FormSet = modelformset_factory(UserInstrument, UserInstrumentForm, extra=blank_forms)
     
     if request.method=="POST":
-        form = ProfileForm(request.POST)
+        baseform = ProfileForm(request.POST)
+        instrument_forms = instrument_FormSet(request.POST)
         
-        if form.is_valid():
-            details = form.save(False)
+        if baseform.is_valid() and instrument_forms.is_valid():
+            # update the user's instruments - first we need to delete the previous data:
+            # UserInstrument.objects.filter(user=user_id).delete()
+            # then add the new ones:
+            # for instrument_form in instrument_forms:
+            #     instr = instrument_form.save(False)
+            #     instr.user = request.user
+            #     instr.save()
+
+            # save the non-instrument profile details (location and max_distance)
+            details = baseform.save(False)
             details.user = request.user
+            # now the instrument details
+            instruments = instrument_forms.save(False)
+            for instr in instruments:
+                instr.user = request.user
             try:
                 details.save()
+                instruments.save()
+
             except IntegrityError:
                 # this happens if the user already exists (because only one profile is allowed per user)
                 # In other words, the user wants to update their profile. We allow this by specifying
                 # the primary key when saving the model
-                user_id = User.objects.get(username=request.user.username).pk
                 details.pk = Profile.objects.get(user=user_id).pk
                 details.save()
+                for instr in instruments:
+                    instr.pk = Profile.objects.get(user=user_id).pk
+                instruments.save()
+            
         else:
             messages.error(request, "Please correct the following errors:")
     else:
         # display the user's current details, if they exist
         try:
             user_profile = Profile.objects.get(user=user_id)
-            location = user_profile.location or None
-            max_dist = user_profile.max_distance or None
-            data = {"location": location, "max_distance": max_dist}
-            form = ProfileForm(initial=data)
+            baseform = ProfileForm(instance=user_profile)
+            instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.filter(user=user_id))
         except Profile.DoesNotExist:
-            form = ProfileForm()
+            baseform = ProfileForm()
+            instrument_forms = instrument_FormSet(UserInstrument.objects.none())
 
-    args = {"active": "profile", "incomplete_profile": not complete, "form": form}
+    args = {"active": "profile", "incomplete_profile": not complete, "baseform": baseform,
+            "instrument_forms": instrument_forms}
     args.update(csrf(request))
     return render(request, "accounts/profile.html", args)
 

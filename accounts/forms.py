@@ -31,3 +31,27 @@ class ProfileForm(forms.ModelForm):
         fields = ["location", "max_distance"]
         widgets = {"location": GooglePointFieldWidget,
                    "max_distance": forms.RadioSelect}
+
+
+class UserInstrumentForm(forms.ModelForm):
+    """
+    This form allows a user to select an instrument that they play, their rough
+    standard on it - and what other instruments they are looking fo form a group with,
+    and what standard they require the other players to be at.
+
+    Copies of this form will be inserted into the profile form, with buttons the user
+    can click to add or remove instruments
+    """
+    def __init__(self, *args, **kwargs):
+        super(UserInstrumentForm, self).__init__(*args, **kwargs)
+        self.fields["desired_instruments"].empty_label = None
+        self.fields["desired_instruments"].widget.choices = self.fields["desired_instruments"].choices
+        self.fields["accepted_standards"].empty_label = None
+        self.fields["accepted_standards"].widget.choices = self.fields["accepted_standards"].choices
+
+    class Meta:
+        model = UserInstrument
+        fields = ["instrument", "standard", "desired_instruments", "accepted_standards"]
+        widgets = {"instrument": forms.RadioSelect, "standard": forms.RadioSelect,
+                   "desired_instruments": forms.CheckboxSelectMultiple,
+                   "accepted_standards": forms.CheckboxSelectMultiple}

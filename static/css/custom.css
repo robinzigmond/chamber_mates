@@ -23,6 +23,31 @@ a {
     font-size: 28px;
 }
 
+.message {
+    border-radius: 5px;
+    color: black;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.message.success {
+    background-color: darkolivegreen;
+    border-top: 3px dotted green;
+    border-bottom: 3px dotted green;
+}
+
+.message.error {
+    background-color: darkred;
+    border-top: 3px dotted red;
+    border-bottom: 3px dotted red;
+}
+
+.message.last {
+    margin-bottom: 20px;
+}
+
 .media {
     text-align: center;
     margin: 20px 0;
@@ -42,6 +67,16 @@ a {
 .form-group .radio, .form-group .checkbox {
     display: inline-block;
     margin: 0 20px;
+}
+
+.has-error .checkbox, .has-error .radio, .has-error .control-label {
+    color: inherit;
+}
+
+.has-error [id^="error_id"] {
+    font-weight: bold;
+    font-size: 16px;
+    color: darkred;
 }
 
 /*#location-mw-wrap {

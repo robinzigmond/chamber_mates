@@ -42,6 +42,18 @@
                 </div>
             </div>
         </nav>
+        {% if messages %}
+            <div class="container-fluid">
+                {% for message in messages %}
+                    <div class="row">
+                        <div class="col-xs-12 message {% if message.tags %} {{ message.tags }} {% endif %}
+                                    {% if forloop.last %} last {% endif %}">
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         {% block content %}
         {% endblock %}
     </body>

@@ -29,10 +29,14 @@ def register(request):
 
             if user:
                 auth.login(request, user)
+                messages.success(request, "You have successfullyl registered with Chamber Mates!")
                 return redirect(reverse("profile"))
             else:
                 messages.error(request, "Oops, something went wrong! Please review your details and try again.")
-    
+        else:
+            messages.error(request, """Sorry, something you entered wasn't right. Please correct
+                                       the errors below and you'll be registered in no time!""")
+
     else:
         form = UserRegistrationForm()
     
@@ -99,7 +103,7 @@ def profile(request):
             instrument_forms.save_m2m()
             
         else:
-            messages.error(request, "Please correct the following errors:")
+            messages.error(request, "Please correct the highlighted errors:")
     else:
         # display the user's current details, if they exist
         try:
@@ -110,7 +114,12 @@ def profile(request):
             baseform = ProfileForm()
             instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.none())
 
-    args = {"active": "profile", "incomplete_profile": not complete, "baseform": baseform,
+    if not complete:
+        messages.success(request, """Please complete your profile with location and instrument information.
+                                     We'll use this information to match you up with the players you want
+                                     in your local area!""")
+
+    args = {"active": "profile", "baseform": baseform,
             "instrument_forms": instrument_forms}
     args.update(csrf(request))
     return render(request, "accounts/profile.html", args)
@@ -130,7 +139,8 @@ def login(request):
                 return redirect(reverse("profile"))
             else:
                 messages.error(request, "Invalid username or password")
-
+        else:
+            messages.error(request, "Please correct the below errors and try again.")
     else:
         form = AuthenticationForm()
     

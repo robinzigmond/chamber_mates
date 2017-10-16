@@ -31,6 +31,8 @@ class ProfileForm(forms.ModelForm):
         fields = ["location", "max_distance"]
         widgets = {"location": GooglePointFieldWidget,
                    "max_distance": forms.RadioSelect}
+        labels = {"location": "Your location",
+                  "max_distance": "Find players within this distance (miles)"}
 
 
 class UserInstrumentForm(forms.ModelForm):
@@ -56,3 +58,8 @@ class UserInstrumentForm(forms.ModelForm):
         widgets = {"instrument": forms.RadioSelect, "standard": forms.RadioSelect,
                    "desired_instruments": forms.CheckboxSelectMultiple,
                    "accepted_standards": forms.CheckboxSelectMultiple}
+        labels = {"standard": "Please select your approximate standard on this instrument",
+                  "desired_instruments": """What instruments do you want to form a group with?
+                                          Select as many as you like.""",
+                  "accepted_standards": """I'd be happy with players of these approximate standards
+                                           (select multiples if desired)"""}

@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "home",
     "accounts",
-    "mapwidgets"
+    "mapwidgets",
+    "django_forms_bootstrap"
 ]
 
 MIDDLEWARE = [

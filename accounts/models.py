@@ -28,8 +28,8 @@ class Profile(models.Model):
     We also of course use a OneToOneField to link it to a specific user!
     """
     user = models.OneToOneField(User)
-    location = models.PointField(verbose_name="your location")
-    max_distance = models.ForeignKey(Distance, verbose_name="find me players within this distance (miles)")
+    location = models.PointField()
+    max_distance = models.ForeignKey(Distance)
 
     def __unicode__(self):
         return self.user.username

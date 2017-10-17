@@ -8,9 +8,24 @@
         <div>
             <h3>Your public details:</h3>
             <ul>
-                <li>Email: {{ user.email }}</li>
                 <li>Location: {{ location }}</li>
+                <li>Looking for players within <strong>{{ profile.max_distance }} miles</strong>.</li>
             </ul>
+            <h5>Instruments:</h5>
+            {% for instrument in instruments.all %}
+                <p><strong>{{ instrument.instrument | capfirst }}</strong> player seeking players of the following instruments:</p>
+                <ul>
+                    {% for instr in instrument.desired_instruments.all %}
+                        <li>{{ instr.instrument }}</li>
+                    {% endfor %}
+                </ul>
+                <p>of the following standards:</p>
+                <ul>
+                    {% for standard in instrument.accepted_standards.all %}
+                        <li>{{ standard.standard }}</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
         </div>
         <button class="btn btn-success" onclick="location.href='{% url "edit profile" %}';">Edit profile</button>
         <button class="btn btn-success">Matching users</button>

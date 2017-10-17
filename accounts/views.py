@@ -60,7 +60,13 @@ def logout(request):
 
 @login_required(login_url=reverse_lazy("login"))
 def dashboard(request):
-    point = Profile.objects.get(user=request.user.pk).location
+    try:
+        profile = Profile.objects.get(user=request.user.pk)
+    except Profile.DoesNotExist:
+        messages.error(request, "Oops, something went wrong! Try completing your profile first!")
+        return redirect(reverse("edit profile"))
+    instruments = UserInstrument.objects.filter(user=request.user.pk)
+    point = profile.location
     results = Client(key=settings.GOOGLE_MAP_API_KEY).reverse_geocode(point.coords[::-1])
     for item in results:
         try:
@@ -70,7 +76,10 @@ def dashboard(request):
             continue
     # remove first part of address, for privacy reasons
     comma_location = place.find(",")
-    return render(request, "accounts/dashboard.html", {"active": "dashboard", "location": place[comma_location+1:]})
+    return render(request, "accounts/dashboard.html", {"active": "dashboard",
+                                                       "location": place[comma_location+1:],
+                                                       "profile": profile,
+                                                       "instruments": instruments})
 
 
 @login_required(login_url=reverse_lazy("login"))

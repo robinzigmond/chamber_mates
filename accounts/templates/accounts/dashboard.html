@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h2>Welcome back, {{ user.username }}!</h2>
+        </div>
+        <div>
+            <h3>Your public details:</h3>
+            <ul>
+                <li>Email: {{ user.email }}</li>
+                <li>Location: {{ location }}</li>
+            </ul>
+        </div>
+        <button class="btn btn-success" onclick="location.href='{% url "edit profile" %}';">Edit profile</button>
+        <button class="btn btn-success">Matching users</button>
+        <button class="btn btn-success">My messages</button>
+        <button class="btn btn-success">My groups</button>
+    </div>
+</div>
+{% endblock %}

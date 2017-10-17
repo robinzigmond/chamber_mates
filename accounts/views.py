@@ -10,8 +10,11 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms import modelformset_factory
 from django.template.context_processors import csrf
 from django.db import IntegrityError
-from .forms import UserRegistrationForm, ProfileForm, UserInstrumentForm
+from django.conf import settings
+from googlemaps import Client
+from .forms import UserRegistrationForm, UserUpdateForm,ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument
+
 
 # Create your views here.
 def register(request):
@@ -29,8 +32,8 @@ def register(request):
 
             if user:
                 auth.login(request, user)
-                messages.success(request, "You have successfullyl registered with Chamber Mates!")
-                return redirect(reverse("profile"))
+                messages.success(request, "You have successfully registered with Chamber Mates!")
+                return redirect(reverse("edit profile"))
             else:
                 messages.error(request, "Oops, something went wrong! Please review your details and try again.")
         else:
@@ -56,14 +59,26 @@ def logout(request):
 
 
 @login_required(login_url=reverse_lazy("login"))
-def profile(request):
+def dashboard(request):
+    point = Profile.objects.get(user=request.user.pk).location
+    results = Client(key=settings.GOOGLE_MAP_API_KEY).reverse_geocode(point.coords[::-1])
+    for item in results:
+        try:
+            place = item["formatted_address"]
+            break
+        except KeyError:
+            continue
+    # remove first part of address, for privacy reasons
+    comma_location = place.find(",")
+    return render(request, "accounts/dashboard.html", {"active": "dashboard", "location": place[comma_location+1:]})
+
+
+@login_required(login_url=reverse_lazy("login"))
+def edit_profile(request):
     """
-    view to display the user's profile page, and distinguish whether the user has completed
-    their profile to the minimum standard required to be useful. If not, they are prompted to fill
-    it out
+    view to handle the form for users to enter/edit their profile
     """
-    this_user = User.objects.get(username=request.user.username)
-    user_id = this_user.pk
+    user_id = request.user.pk
     try:
         user_profile = Profile.objects.get(user=user_id)
         num_instruments = UserInstrument.objects.filter(user=user_id).count()
@@ -76,12 +91,22 @@ def profile(request):
     instrument_FormSet = modelformset_factory(UserInstrument, UserInstrumentForm, extra=blank_forms)
     
     if request.method=="POST":
-        baseform = ProfileForm(request.POST)
+        baseform = UserUpdateForm(request.POST, user=request.user)
+        profile_form = ProfileForm(request.POST)
         instrument_forms = instrument_FormSet(request.POST)
         
-        if baseform.is_valid() and instrument_forms.is_valid():
+        if baseform.is_valid() and profile_form.is_valid() and instrument_forms.is_valid():
+            # save the new email and/or password - but only if the user tried to change it!
+            data = baseform.cleaned_data
+            if baseform.fields["email"].has_changed(request.user.email, data["email"]):
+                request.user.email = data["email"]
+            if (baseform.fields["current_password"].has_changed(None, data["current_password"])
+                or baseform.fields["new_password1"].has_changed(None, data["new_password1"])
+                or baseform.fields["new_password2"].has_changed(None, data["new_password2"])):
+                request.user.set_password(data["new_password1"])
+                request.user.save()
             # save the non-instrument profile details (location and max_distance)
-            details = baseform.save(commit=False)
+            details = profile_form.save(commit=False)
             details.user = request.user
             # now the instrument details
             instruments = instrument_forms.save(commit=False)
@@ -101,28 +126,32 @@ def profile(request):
             # need to save many-to-many fields separately because Django loses this
             # information when saving with commit=False:
             instrument_forms.save_m2m()
-            
+            verb = "updated" if complete else "completed"
+            messages.success(request, "You have successfully "+verb+" your profile.")
+            return redirect(reverse("dashboard"))
+
         else:
             messages.error(request, "Please correct the highlighted errors:")
     else:
         # display the user's current details, if they exist
         try:
             user_profile = Profile.objects.get(user=user_id)
-            baseform = ProfileForm(instance=user_profile)
+            profile_form = ProfileForm(instance=user_profile)
             instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.filter(user=user_id))
         except Profile.DoesNotExist:
-            baseform = ProfileForm()
+            profile_form = ProfileForm()
             instrument_forms = instrument_FormSet(queryset=UserInstrument.objects.none())
+        baseform = UserUpdateForm(initial={"email": request.user.email})
 
     if not complete:
         messages.success(request, """Please complete your profile with location and instrument information.
                                      We'll use this information to match you up with the players you want
                                      in your local area!""")
 
-    args = {"active": "profile", "baseform": baseform,
+    args = {"active": "dashboard", "base_form": baseform, "profile_form": profile_form,
             "instrument_forms": instrument_forms}
     args.update(csrf(request))
-    return render(request, "accounts/profile.html", args)
+    return render(request, "accounts/edit_profile.html", args)
 
 
 def login(request):
@@ -136,7 +165,7 @@ def login(request):
                                      password=request.POST.get("password"))
             if user:
                 auth.login(request, user)
-                return redirect(reverse("profile"))
+                return redirect(reverse("dashboard"))
             else:
                 messages.error(request, "Invalid username or password")
         else:

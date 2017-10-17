@@ -1,5 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 from django.contrib.gis import forms
 from mapwidgets.widgets import GooglePointFieldWidget
 from .models import Profile, UserInstrument
@@ -12,6 +13,36 @@ class UserRegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["username", "email", "password1", "password2"]
+
+
+class UserUpdateForm(forms.Form):
+    """
+    Form for a user to edit their email and password
+    """
+    email = forms.EmailField()
+    current_password = forms.CharField(widget=forms.PasswordInput, required=False)
+    new_password1 = forms.CharField(label="new password", widget=forms.PasswordInput, required=False)
+    new_password2 = forms.CharField(label="confirm new password", widget=forms.PasswordInput, required=False)
+
+    # make sure we can pass the User instance in to the form
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super(UserUpdateForm, self).__init__(*args, **kwargs)
+
+
+    def clean_current_password(self):
+        old = self.cleaned_data.get("current_password")
+        if not old or check_password(old, self.user.password):
+            return old
+        else:
+            raise forms.ValidationError("Please enter your correct current password")
+
+    def clean_new_password2(self):
+        first = self.cleaned_data.get("new_password1")
+        second = self.cleaned_data.get("new_password2")
+        if first != second:
+            raise forms.ValidationError("The passwords must match!")
+        return second
 
 
 class ProfileForm(forms.ModelForm):

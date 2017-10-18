@@ -66,18 +66,32 @@ def dashboard(request):
         messages.error(request, "Oops, something went wrong! Try completing your profile first!")
         return redirect(reverse("edit profile"))
     instruments = UserInstrument.objects.filter(user=request.user.pk)
+    
+    # use google maps API to get a nicely formatted address string:
     point = profile.location
+    # the database stores the latitude and longitude in the "co-ords" field of the Point Field object
+    # - but in reverse order (longitute, then latitude). Since Google Maps expects the latitute to
+    # be first, we reverse the tuple with ::-1
     results = Client(key=settings.GOOGLE_MAP_API_KEY).reverse_geocode(point.coords[::-1])
+    # results is a list of dictionaries - the number is not possible to determine in advance
+    # - representing geographical areas of decreasing specificity around the given point. Some
+    # - but not all - will have a "formatted_address" key, and we will grab this data from the
+    # first case where it actually exists, in order to get the most specific address possible.
     for item in results:
         try:
             place = item["formatted_address"]
             break
         except KeyError:
             continue
-    # remove first part of address, for privacy reasons
-    comma_location = place.find(",")
+    # handle the possible case where no address can be found:
+    if place is None:
+        address_string = "Unknown"
+    else:
+        # remove first part of address - users will not want their full address to be publicly displayed!
+        comma_location = place.find(",")
+        address_string = place[comma_location+1:]
     return render(request, "accounts/dashboard.html", {"active": "dashboard",
-                                                       "location": place[comma_location+1:],
+                                                       "location": address_string,
                                                        "profile": profile,
                                                        "instruments": instruments})
 
@@ -97,7 +111,8 @@ def edit_profile(request):
         complete = False
         blank_forms = 1
 
-    instrument_FormSet = modelformset_factory(UserInstrument, UserInstrumentForm, extra=blank_forms)
+    instrument_FormSet = modelformset_factory(UserInstrument, UserInstrumentForm,
+                                              extra=blank_forms, can_delete=True)
     
     if request.method=="POST":
         baseform = UserUpdateForm(request.POST, user=request.user)
@@ -117,10 +132,6 @@ def edit_profile(request):
             # save the non-instrument profile details (location and max_distance)
             details = profile_form.save(commit=False)
             details.user = request.user
-            # now the instrument details
-            instruments = instrument_forms.save(commit=False)
-            for instr in instruments:
-                instr.user = request.user
             try:
                 details.save()
             except IntegrityError:
@@ -129,12 +140,11 @@ def edit_profile(request):
                 # the primary key when saving the model
                 details.pk = Profile.objects.get(user=user_id).pk
                 details.save()
-            
+            # now the instrument details
+            instruments = instrument_forms.save(commit=False)
             for instr in instruments:
-                instr.save()
-            # need to save many-to-many fields separately because Django loses this
-            # information when saving with commit=False:
-            instrument_forms.save_m2m()
+                instr.user = request.user
+            instrument_forms.save()            
             verb = "updated" if complete else "completed"
             messages.success(request, "You have successfully "+verb+" your profile.")
             return redirect(reverse("dashboard"))

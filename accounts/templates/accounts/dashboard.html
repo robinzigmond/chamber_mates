@@ -11,7 +11,6 @@
                 <li>Location: {{ location }}</li>
                 <li>Looking for players within <strong>{{ profile.max_distance }} miles</strong>.</li>
             </ul>
-            <h5>Instruments:</h5>
             {% for instrument in instruments.all %}
                 <p><strong>{{ instrument.instrument | capfirst }}</strong> player seeking players of the following instruments:</p>
                 <ul>
@@ -25,12 +24,15 @@
                         <li>{{ standard.standard }}</li>
                     {% endfor %}
                 </ul>
+                Self-assessed standard on {{ instrument.instrument }}: "{{ instrument.standard }}".
             {% endfor %}
         </div>
-        <button class="btn btn-success" onclick="location.href='{% url "edit profile" %}';">Edit profile</button>
-        <button class="btn btn-success">Matching users</button>
-        <button class="btn btn-success">My messages</button>
-        <button class="btn btn-success">My groups</button>
+        <div class="col-xs-12" id="dashboard-buttons">
+            <button class="btn btn-success" onclick="location.href='{% url "edit profile" %}';">Edit profile</button>
+            <button class="btn btn-success">Matching users</button>
+            <button class="btn btn-success">My messages</button>
+            <button class="btn btn-success">My groups</button>
+        </div>
     </div>
 </div>
 {% endblock %}

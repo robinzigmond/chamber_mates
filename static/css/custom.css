@@ -13,8 +13,12 @@ a {
     border: 0;
 }
 
-.navbar-default .navbar-nav li.active a {
+.navbar-default .navbar-nav li.active a, .navbar-default .navbar-nav .open .dropdown a,
+.navbar-default .navbar-nav li.active a:hover, li.dropdown.open {
     background-color: #1e85ae;
+}
+
+.navbar-default .navbar-nav li.active a:hover {
     color: #cce;
 }
 

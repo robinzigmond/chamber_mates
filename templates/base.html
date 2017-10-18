@@ -31,7 +31,19 @@
                         <li {% if active == "home" %}class="active"{% endif %}><a href="{% url 'home' %}">Home</a></li>
                         <li {% if active == "why" %}class="active"{% endif %}><a href="{% url 'why' %}">Why Chamber Music?</a></li>
                         {% if user.is_authenticated %}
-                            <li {% if active == "dashboard" %}class="active"{% endif %}><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                            <li class="dropdown{% if active == "dashboard" %} active{% endif %}">
+                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                    Dashboard
+                                    <span class="caret"></span>
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                                    <li><a href="{% url 'edit profile' %}">Edit Profile</a></li>
+                                    <li><a href="#">Users</a></li>
+                                    <li><a href="#">Messages</a></li>
+                                    <li><a href="#">My Groups</a></li>
+                                </ul>
+                            </li>
                             <li {% if active == "logout" %}class="active"{% endif %}><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>
                         {% else %}
                             <li {% if active == "register" %}class="active"{% endif %}><a href="{% url 'register' %}">Register</a></li>

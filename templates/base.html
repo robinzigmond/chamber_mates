@@ -67,5 +67,16 @@
         {% endif %}
         {% block content %}
         {% endblock %}
+        {% if user_messages %}
+            <div class="container-fluid" id="new-messages">
+                {% for message in user_messages %}
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <a href="#">You have a new message from {{ message.user_from }}!</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </body>
 </html>

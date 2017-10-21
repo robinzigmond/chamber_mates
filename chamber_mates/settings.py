@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     "home",
     "accounts",
     "mapwidgets",
-    "django_forms_bootstrap"
+    "django_forms_bootstrap",
+    "user_messages"
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "user_messages.context_processors.user_messages"
             ],
         },
     },

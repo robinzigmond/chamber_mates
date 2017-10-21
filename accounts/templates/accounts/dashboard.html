@@ -3,10 +3,19 @@
 <div class="container">
     <div class="row">
         <div class="col-xs-12">
-            <h2>Welcome back, {{ user.username }}!</h2>
+            <h2>{% if editable %}
+                    Welcome back,
+                {% else %}
+                    Public profile for
+                {% endif %}
+                {{ id.username }}
+                {% if editable %}!{% endif %}
+            </h2>
         </div>
         <div>
-            <h3>Your public details:</h3>
+            {% if editable %}
+                <h3>Your public details:</h3>
+            {% endif %}
             <ul>
                 <li>Location: {{ location }}</li>
                 <li>Looking for players within <strong>{{ profile.max_distance }} miles</strong>.</li>
@@ -27,12 +36,16 @@
                 Self-assessed standard on {{ instrument.instrument }}: "{{ instrument.standard }}".
             {% endfor %}
         </div>
-        <div class="col-xs-12" id="dashboard-buttons">
-            <button class="btn btn-success" onclick="location.href='{% url "edit profile" %}';">Edit profile</button>
-            <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
-            <button class="btn btn-success">My messages</button>
-            <button class="btn btn-success">My groups</button>
-        </div>
+        {% if editable %}
+            <div class="col-xs-12" id="dashboard-buttons">
+                <button class="btn btn-success" onclick="location.href='{% url "edit_profile" %}';">Edit profile</button>
+                <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
+                <button class="btn btn-success">My messages</button>
+                <button class="btn btn-success">My groups</button>
+            </div>
+        {% else %}
+            <button class="btn btn-success">Send message to {{ id }}</button>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

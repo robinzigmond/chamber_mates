@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
@@ -15,6 +15,39 @@ from django.conf import settings
 from googlemaps import Client
 from .forms import UserRegistrationForm, UserUpdateForm,ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument
+
+
+# helper function to look up a user's profile details. Used on both the "dashboard" page
+# (where it applies to the logged-in user) and the generi "profiles" pages where users can
+# browse the profiles of other users:
+def get_profile_details(user):
+    profile = get_object_or_404(User, pk=user.pk).profile
+    instruments = UserInstrument.objects.filter(user=user.pk)
+    
+    # use google maps API to get a nicely formatted address string:
+    point = profile.location
+    # the database stores the latitude and longitude in the "co-ords" field of the Point Field object
+    # - but in reverse order (longitute, then latitude). Since Google Maps expects the latitute to
+    # be first, we reverse the tuple with ::-1
+    results = Client(key=settings.GOOGLE_MAP_API_KEY).reverse_geocode(point.coords[::-1])
+    # results is a list of dictionaries - the number is not possible to determine in advance
+    # - representing geographical areas of decreasing specificity around the given point. Some
+    # - but not all - will have a "formatted_address" key, and we will grab this data from the
+    # first case where it actually exists, in order to get the most specific address possible.
+    for item in results:
+        try:
+            place = item["formatted_address"]
+            break
+        except KeyError:
+            continue
+    # handle the possible case where no address can be found:
+    if place is None:
+        address_string = "Unknown"
+    else:
+        # remove first part of address - users will not want their full address to be publicly displayed!
+        comma_location = place.find(",")
+        address_string = place[comma_location+1:]
+    return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
 
 
 # Create your views here.
@@ -34,7 +67,7 @@ def register(request):
             if user:
                 auth.login(request, user)
                 messages.success(request, "You have successfully registered with Chamber Mates!")
-                return redirect(reverse("edit profile"))
+                return redirect(reverse("edit_profile"))
             else:
                 messages.error(request, "Oops, something went wrong! Please review your details and try again.")
         else:
@@ -65,36 +98,11 @@ def dashboard(request):
         profile = Profile.objects.get(user=request.user.pk)
     except Profile.DoesNotExist:
         messages.error(request, "Oops, something went wrong! Try completing your profile first!")
-        return redirect(reverse("edit profile"))
-    instruments = UserInstrument.objects.filter(user=request.user.pk)
-    
-    # use google maps API to get a nicely formatted address string:
-    point = profile.location
-    # the database stores the latitude and longitude in the "co-ords" field of the Point Field object
-    # - but in reverse order (longitute, then latitude). Since Google Maps expects the latitute to
-    # be first, we reverse the tuple with ::-1
-    results = Client(key=settings.GOOGLE_MAP_API_KEY).reverse_geocode(point.coords[::-1])
-    # results is a list of dictionaries - the number is not possible to determine in advance
-    # - representing geographical areas of decreasing specificity around the given point. Some
-    # - but not all - will have a "formatted_address" key, and we will grab this data from the
-    # first case where it actually exists, in order to get the most specific address possible.
-    for item in results:
-        try:
-            place = item["formatted_address"]
-            break
-        except KeyError:
-            continue
-    # handle the possible case where no address can be found:
-    if place is None:
-        address_string = "Unknown"
-    else:
-        # remove first part of address - users will not want their full address to be publicly displayed!
-        comma_location = place.find(",")
-        address_string = place[comma_location+1:]
-    return render(request, "accounts/dashboard.html", {"active": "dashboard",
-                                                       "location": address_string,
-                                                       "profile": profile,
-                                                       "instruments": instruments})
+        return redirect(reverse("edit_profile"))
+
+    args = {"active": "dashboard", "editable": True}
+    args.update(get_profile_details(request.user))
+    return render(request, "accounts/dashboard.html", args)
 
 
 @login_required(login_url=reverse_lazy("login"))
@@ -241,3 +249,14 @@ def matches(request):
                         matches[played.instrument.instrument] = {wanted.instrument: [user.username]}
 
     return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches})
+
+
+@login_required(login_url=reverse_lazy("login"))
+def profiles(request, username):
+    """
+    A view to allow a specific user's public profile to be seen
+    """
+    user = get_object_or_404(User, username=username)
+    args = {"active": "dashboard", "editable": False}
+    args.update(get_profile_details(user))
+    return render(request, "accounts/dashboard.html", args)

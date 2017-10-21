@@ -13,7 +13,7 @@
                             <ul>
                                 {% for user in value1 %}
                                     <li>
-                                        <a href="#">{{ user }}</a>
+                                        <a href="{% url 'user_profile' username=user %}">{{ user }}</a>
                                     </li>
                                 {% endfor %}
                             </ul>

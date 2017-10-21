@@ -1,11 +1,13 @@
 // I (RZ) have made some very minor changes to the original file, in order to animate the addition
 // and removal of the forms. jQuery does this natively, so I am surprised that there is no support
-// for this in the original. I have added a "duration" parameter to all calls to show() and hide() -
-// but the most important changes were:
+// for this in the original. This was accomplished as follows:
 // 1. to enable smooth animation for adding elements (the call to insertBefore in the addButton's
 // click handler), I had to immediately hide the element, then show it with a transition
 // 2) for smooth animation of removals, while still removing the elemnts from the DOM,
 // I changed eg. row.remove() to row.hide(300, row.remove)
+
+// There appears to be a bug in the script - if a form is added, then filled out, but deleted before
+// clicking "submit", the deleted form's data is nonetheless saved in the database!
 
 /**
  * jQuery Formset 1.3-pre
@@ -79,7 +81,7 @@
                 }
                 // Check if we're under the minimum number of forms - not to display delete link at rendering
                 if (!showDeleteLinks()){
-                    row.find('a.' + delCssSelector).hide(300);
+                    row.find('a.' + delCssSelector).hide();
                 }
 
                 row.find('a.' + delCssSelector).click(function() {
@@ -92,10 +94,10 @@
                         // Rather than remove this form from the DOM, we'll mark it as deleted
                         // and hide it, then let Django handle the deleting:
                         del.val('on');
-                        row.hide(500);
+                        row.hide(300);
                         forms = $('.' + options.formCssClass).not(':hidden');
                     } else {
-                        row.hide(500, row.remove);
+                        row.hide(300, row.remove);
                         // Update the TOTAL_FORMS count:
                         forms = $('.' + options.formCssClass).not('.formset-custom-template');
                         totalForms.val(forms.length);
@@ -113,10 +115,10 @@
                     }
                     // Check if we've reached the minimum number of forms - hide all delete link(s)
                     if (!showDeleteLinks()){
-                        $('a.' + delCssSelector).each(function(){$(this).hide(300);});
+                        $('a.' + delCssSelector).each(function(){$(this).hide();});
                     }
                     // Check if we need to show the add button:
-                    if (buttonRow.is(':hidden') && showAddButton()) buttonRow.show(300);
+                    if (buttonRow.is(':hidden') && showAddButton()) buttonRow.show();
                     // If a post-delete callback was provided, call it with the deleted form:
                     if (options.removed) options.removed(row);
                     return false;
@@ -134,13 +136,13 @@
                     // If an inline formset containing deleted forms fails validation, make sure
                     // we keep the forms hidden (thanks for the bug report and suggested fix Mike)
                     del.before('<input type="hidden" name="' + del.attr('name') +'" id="' + del.attr('id') +'" value="on" />');
-                    row.hide(300);
+                    row.hide();
                 } else {
                     del.before('<input type="hidden" name="' + del.attr('name') +'" id="' + del.attr('id') +'" />');
                 }
                 // Hide any labels associated with the DELETE checkbox:
-                $('label[for="' + del.attr('id') + '"]').hide(300);
-                del.hide(300).remove();
+                $('label[for="' + del.attr('id') + '"]').hide();
+                del.remove();
             }
             if (hasChildElements(row)) {
                 row.addClass(options.formCssClass);
@@ -189,13 +191,13 @@
                     buttonRow = $('<tr><td colspan="' + numCols + '"><a class="' + options.addCssClass + '" href="javascript:void(0)">' + options.addText + '</a></tr>')
                                 .addClass(options.formCssClass + '-add');
                 $$.parent().append(buttonRow);
-                if (hideAddButton) buttonRow.hide(300);
+                if (hideAddButton) buttonRow.hide();
                 addButton = buttonRow.find('a');
             } else {
                 // Otherwise, insert it immediately after the last form:
                 $$.filter(':last').after('<a class="' + options.addCssClass + '" href="javascript:void(0)">' + options.addText + '</a>');
                 addButton = $$.filter(':last').next();
-                if (hideAddButton) addButton.hide(300);
+                if (hideAddButton) addButton.hide();
             }
             addButton.click(function() {
                 var formCount = parseInt(totalForms.val()),
@@ -210,10 +212,10 @@
                 totalForms.val(formCount + 1);
                 // Check if we're above the minimum allowed number of forms -> show all delete link(s)
                 if (showDeleteLinks()){
-                    $('a.' + delCssSelector).each(function(){$(this).show(300);});
+                    $('a.' + delCssSelector).each(function(){$(this).show();});
                 }
                 // Check if we've exceeded the maximum allowed number of forms:
-                if (!showAddButton()) buttonRow.hide(300);
+                if (!showAddButton()) buttonRow.hide();
                 // If a post-add callback was supplied, call it with the added form:
                 if (options.added) options.added(row);
                 return false;

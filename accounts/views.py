@@ -6,6 +6,7 @@ from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.gis.measure import Distance
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms import modelformset_factory
 from django.template.context_processors import csrf
@@ -13,7 +14,7 @@ from django.db import IntegrityError
 from django.conf import settings
 from googlemaps import Client
 from .forms import UserRegistrationForm, UserUpdateForm,ProfileForm, UserInstrumentForm
-from .models import Profile, UserInstrument
+from .models import Profile, UserInstrument, Instrument
 
 
 # Create your views here.
@@ -196,3 +197,47 @@ def login(request):
     args.update(csrf(request))
 
     return render(request, "accounts/login.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def matches(request):
+    """
+    A view to handle displaying a list of all users matching the given user's search criteria
+    in their profile
+    """
+    matches = {}
+    # sample output of matches, for a user who plays violin and oboe. As a violinist they are
+    # looking for a pianist and a cellist, and as an oboist they just want a pianist:
+    # matches = {"violin": {"piano": ["Peter", "Jane", "John"], "cello": ["Bob"]},
+    #            "oboe": {"piano": ["Lucy", "Robin"]}}
+
+    profile = Profile.objects.get(user=request.user)
+    max_dist = profile.max_distance.distance
+    user_location = profile.location
+    close_enough = User.objects.filter(profile__location__distance_lte=(user_location,
+                                                                        Distance(mi=max_dist)))
+
+    instruments_played = UserInstrument.objects.filter(user=request.user)
+
+    for played in instruments_played:
+        instruments_wanted = played.desired_instruments
+        standards_wanted = played.accepted_standards.values("standard")
+        for wanted in instruments_wanted.all():
+            for user in close_enough:
+                # we don't want to match anyone with themselves!
+                if user == request.user:
+                    continue
+                if user.userinstrument_set.filter(instrument=wanted, 
+                                                  standard__standard__in=standards_wanted).exists():
+                    # we've found a match. Let's store these nicely in the nested "matches" dict
+                    try:
+                        instrument_matches = matches[played.instrument.instrument]
+                        try:
+                            wanted_matches = instrument_matches[wanted.instrument]
+                            wanted_matches.append(user.username)
+                        except KeyError:
+                            instrument_matches[wanted.instrument] = [user.username]
+                    except KeyError:
+                        matches[played.instrument.instrument] = {wanted.instrument: [user.username]}
+
+    return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches})

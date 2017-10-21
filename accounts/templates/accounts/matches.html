@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Your matching users:</h3>
+                {% if matches %}
+                    {% for key,value in matches.iteritems %}
+                        <h5><strong>{{ key | capfirst }}:</strong></h5>
+                        {% for key1,value1 in value.iteritems %}
+                            <p>Possible {{ key1 }} partners:</p>
+                            <ul>
+                                {% for user in value1 %}
+                                    <li>
+                                        <a href="#">{{ user }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p>Sorry, there are no users matching any of your requirements. Perhaps you should widen your search - look for your Chamber Mates slightly further away, or be less demanding of their standard.</p>
+                    <p>We will notify you whenever a new user signs up who fits your profile!</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Return to dashboard</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

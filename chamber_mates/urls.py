@@ -26,5 +26,6 @@ urlpatterns = [
     url(r"^logout/$", accounts_views.logout, name="logout"),
     url(r"^dashboard/$", accounts_views.dashboard, name="dashboard"),
     url(r"^profile/edit/$", accounts_views.edit_profile, name="edit profile"),
-    url(r"^login/$", accounts_views.login, name="login")
+    url(r"^login/$", accounts_views.login, name="login"),
+    url(r"^matches/$", accounts_views.matches, name="matches")
 ]

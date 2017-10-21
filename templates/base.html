@@ -31,7 +31,7 @@
                         <li {% if active == "home" %}class="active"{% endif %}><a href="{% url 'home' %}">Home</a></li>
                         <li {% if active == "why" %}class="active"{% endif %}><a href="{% url 'why' %}">Why Chamber Music?</a></li>
                         {% if user.is_authenticated %}
-                            <li class="dropdown{% if active == "dashboard" %} active{% endif %}">
+                            <li class="dropdown {% if active == "dashboard" %} active {% endif %}">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                     Dashboard
                                     <span class="caret"></span>

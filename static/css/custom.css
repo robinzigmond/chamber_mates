@@ -1,6 +1,7 @@
 body {
     background-color: #1e85ae;
     color: #cce;
+    padding-bottom: 30px;
 }
 
 a {
@@ -68,6 +69,14 @@ a {
     margin: 10px;
 }
 
+.instrument-description {
+    border: 1px solid black;
+    background-color: #737373;
+    margin: 20px;
+    color: white;
+    padding: 5px;
+}
+
 #dashboard-buttons button {
     width: 125px;
     text-align: center;
@@ -114,4 +123,23 @@ a {
 
 .add-row {
     margin-bottom: 20px;
+}
+
+.table {
+    border: 3px solid white;
+    background-color: #0f4357;
+    margin-top: 20px;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background-color: #737373;
+}
+
+.table tr.first-wanted td {
+    border-top-width: 3px;
+}
+
+tr.first-wanted td:first-child {
+    font-weight: bold;
+    font-size: 16px;
 }

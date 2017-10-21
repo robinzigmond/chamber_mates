@@ -13,14 +13,16 @@ from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.conf import settings
 from googlemaps import Client
-from .forms import UserRegistrationForm, UserUpdateForm,ProfileForm, UserInstrumentForm
+from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument
 
 
-# helper function to look up a user's profile details. Used on both the "dashboard" page
-# (where it applies to the logged-in user) and the generi "profiles" pages where users can
-# browse the profiles of other users:
 def get_profile_details(user):
+    """
+    helper function to look up a user's profile details. Used on both the "dashboard" page
+    (where it applies to the logged-in user) and the generi "profiles" pages where users can
+    browse the profiles of other users:
+    """
     profile = get_object_or_404(User, pk=user.pk).profile
     instruments = UserInstrument.objects.filter(user=user.pk)
     

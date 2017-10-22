@@ -166,3 +166,21 @@ tr.first-wanted td:first-child {
     font-weight: bold;
     font-size: 16px;
 }
+
+.user-match-list {
+    display: none;
+    list-style-type: none;
+    padding: 0;
+}
+
+.clickable {
+    text-decoration: underline;
+}
+
+.hide-it {
+    margin-top: 5px;
+}
+
+.clickable:hover {
+    cursor: pointer;
+}

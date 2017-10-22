@@ -23,11 +23,18 @@
                                         </td>
                                         <td>{{ instr | capfirst }}</td>
                                         <td>
-                                            {% for user in users %}
-                                                <a href="{% url 'user_profile' username=user %}">
-                                                    {{ user }}{% if not forloop.last %}, {% endif %}
-                                                </a>
-                                            {% endfor %}
+                                            <p class="num-matches">
+                                                {{ users | length }} match{{ users | length | pluralize:"es" }}
+                                                <span class="clickable show-it">Show</span>
+                                            </p>
+                                            <ul class="user-match-list">
+                                                {% for user in users %}
+                                                    <li>
+                                                        <a href="{% url 'user_profile' username=user %}">{{ user }}</a>
+                                                    </li>
+                                                {% endfor %}
+                                                <p class="clickable hide-it">Hide</p>
+                                            </ul>
                                         </td>
                                     </tr>
                             {% endfor %}
@@ -46,4 +53,16 @@
             </div>
         </div>
     </div>
+    <script type="text/javascript">
+        $(document).ready(function() { 
+            $(".clickable.show-it").click(function() {
+                $(this).hide();
+                $(this).parents(".num-matches").siblings(".user-match-list").slideDown(400);
+            });
+            $(".clickable.hide-it").click(function() {
+                $(this).parents(".user-match-list").siblings(".num-matches").children(".clickable.show-it").show();
+                $(this).parents(".user-match-list").slideUp(400);
+            });
+        });
+    </script>
 {% endblock %}

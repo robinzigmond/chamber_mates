@@ -67,9 +67,9 @@
         </div>
     </div>
     <script type="text/javascript">
-        var pageSize = 2, currentPage=1;
+        var pageSize = 2, currentPage=1, total={{ usermessages | length }};
         function displayCorrectMessages() {
-            for (var i=1; i<={{ usermessages | length}}; i++) {
+            for (var i=1; i<=total; i++) {
                 if (i<=(currentPage-1)*pageSize || i>currentPage*pageSize) {
                     $("#message-"+i).hide();
                 }
@@ -80,7 +80,7 @@
         }
         $(document).ready(displayCorrectMessages);
         $("#next-button").click(function() {
-            currentPage = Math.min(currentPage+1, pageSize);
+            currentPage = Math.min(currentPage+1, Math.ceil(total/pageSize));
             displayCorrectMessages();
         });
         $("#prev-button").click(function() {

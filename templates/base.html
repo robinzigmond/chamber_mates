@@ -40,7 +40,7 @@
                                     <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
                                     <li><a href="{% url 'edit_profile' %}">Edit Profile</a></li>
                                     <li><a href="{% url 'matches' %}">Matches</a></li>
-                                    <li><a href="#">Messages</a></li>
+                                    <li><a href="{% url 'inbox' %}">Messages</a></li>
                                     <li><a href="#">My Groups</a></li>
                                 </ul>
                             </li>
@@ -69,13 +69,11 @@
         {% endblock %}
         {% if user_messages %}
             <div class="container-fluid" id="new-messages">
-                {% for message in user_messages %}
-                    <div class="row">
-                        <div class="col-xs-12">
-                            <a href="#">You have a new message from {{ message.user_from }}!</a>
-                        </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <a href="{% url 'inbox' %}">You have {{ user_messages | length }} new messages!</a>
                     </div>
-                {% endfor %}
+                </div>
             </div>
         {% endif %}
     </body>

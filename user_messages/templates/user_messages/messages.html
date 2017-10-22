@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>
+                    Your {% if view == "inbox" %} inbox {% else %} sent messages {% endif %} 
+                </h2>
+                <div class="message-list">
+                    {% if usermessages %}
+                        <table class="table">
+                            <thead>
+                                <th><button class="btn btn-danger btn-sm">Delete selected</button></th>
+                                <th>
+                                    {% if view == "inbox" %}From{% else %}To{% endif %}
+                                </th>
+                                <th>Title</th>
+                                <th>Sent</th>
+                                <th></th>
+                            </thead>
+                            <tbody>
+                                {% for message in usermessages %}
+                                    <tr id="message-{{ forloop.counter }}">
+                                        <td>
+                                            <input type="checkbox">
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'user_profile' username=message.user_from %}">
+                                                {% if view == "inbox" %}
+                                                    {{ message.user_from }}
+                                                {% else %}
+                                                    {{ message.user_to }}
+                                                {% endif %}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="#" {% if not message.seen %}class="unread-message"{% endif %}>
+                                                {{ message.title }}
+                                            </a>
+                                        </td>
+                                        <td>{{ message.sent_date }}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm">Delete</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <button class="btn btn-default btn-sm" id="prev-button">Prev</button>
+                        <button class="btn btn-default btn-sm" id="next-button">Next</button>
+                    {% else %}
+                        <p>There are no messages to see here!</p>
+                    {% endif %}
+                    <div id="dashboard-buttons">
+                        {% if view == "inbox" %}
+                            <button class="btn btn-success" onclick="location.href='{% url "outbox" %}';">
+                                Sent messages
+                            </button>
+                        {% else %}
+                            <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">
+                                Inbox
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        var pageSize = 2, currentPage=1;
+        function displayCorrectMessages() {
+            for (var i=1; i<={{ usermessages | length}}; i++) {
+                if (i<=(currentPage-1)*pageSize || i>currentPage*pageSize) {
+                    $("#message-"+i).hide();
+                }
+                else {
+                    $("#message-"+i).show();
+                }
+            }
+        }
+        $(document).ready(displayCorrectMessages);
+        $("#next-button").click(function() {
+            currentPage = Math.min(currentPage+1, pageSize);
+            displayCorrectMessages();
+        });
+        $("#prev-button").click(function() {
+            currentPage = Math.max(currentPage-1, 1);
+            displayCorrectMessages();
+        });
+    </script>
+{% endblock %}

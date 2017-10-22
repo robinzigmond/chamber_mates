@@ -184,3 +184,8 @@ tr.first-wanted td:first-child {
 .clickable:hover {
     cursor: pointer;
 }
+
+.unread-message {
+    font-weight: bold;
+    color: darkturquoise;
+}

@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from .models import Message
 
-def user_messages(request):
+def messages(request):
     """
     Context processor to fetch all unread messages that the user has
     """

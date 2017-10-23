@@ -40,12 +40,15 @@
                                         </td>
                                         <td>{{ message.sent_date }}</td>
                                         <td>
-                                            <button class="btn btn-danger btn-sm">Delete</button>
+                                            <button class="btn btn-danger btn-sm modal-delete" data-toggle="modal" data-target="#delete-modal">
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <p>Page <span id="first">1</span> of <span id="total">1</span></p>
                         <button class="btn btn-default btn-sm" id="prev-button">Prev</button>
                         <button class="btn btn-default btn-sm" id="next-button">Next</button>
                     {% else %}
@@ -66,8 +69,23 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for confirmation of deleting messages -->
+    <div class="modal fade" id="delete-modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p><strong>Are you sure you want to delete this message?</strong></p>
+                    <a class="btn btn-danger" href="{% url 'delete' to_delete='1' view=view %}">Delete</a>
+                    <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="text/javascript">
-        var pageSize = 2, currentPage=1, total={{ usermessages | length }};
+        var pageSize = 2, currentPage = 1, total = {{ usermessages | length }};
+
         function displayCorrectMessages() {
             for (var i=1; i<=total; i++) {
                 if (i<=(currentPage-1)*pageSize || i>currentPage*pageSize) {
@@ -78,14 +96,35 @@
                 }
             }
         }
-        $(document).ready(displayCorrectMessages);
+
+        function updateText() {
+            $("#first").text(currentPage);
+            $("#total").text(Math.ceil(total/pageSize));
+        }
+
+        $(document).ready(function() {
+            displayCorrectMessages();
+            updateText();
+        });
+
         $("#next-button").click(function() {
             currentPage = Math.min(currentPage+1, Math.ceil(total/pageSize));
             displayCorrectMessages();
+            updateText();
         });
+
         $("#prev-button").click(function() {
             currentPage = Math.max(currentPage-1, 1);
             displayCorrectMessages();
+            updateText();
+        });
+
+        $(".modal-delete").click(function() {
+            var id=$(this).parents("tr").attr("id").slice(8);  // slice off "message-" from id to give just the number
+            var djangoUrl = $(".modal-body a").attr("href");
+            var newUrl = djangoUrl.replace(/\d+$/, id);
+            $(".modal-body a").attr("href", newUrl);
         });
     </script>
+
 {% endblock %}

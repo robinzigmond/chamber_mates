@@ -189,3 +189,7 @@ tr.first-wanted td:first-child {
     font-weight: bold;
     color: darkturquoise;
 }
+
+tr[id^="message-"] {
+    display: none;
+}

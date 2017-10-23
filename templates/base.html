@@ -71,7 +71,7 @@
             <div class="container-fluid" id="new-messages">
                 <div class="row">
                     <div class="col-xs-12">
-                        <a href="{% url 'inbox' %}">You have {{ user_messages | length }} new messages!</a>
+                        <a href="{% url 'inbox' %}">You have {{ user_messages | length }} new message{{ user_messages | length | pluralize }}!</a>
                     </div>
                 </div>
             </div>

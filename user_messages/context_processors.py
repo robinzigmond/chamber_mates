@@ -6,7 +6,7 @@ def messages(request):
     Context processor to fetch all unread messages that the user has
     """
     if isinstance(request.user, User):
-        user_messages = Message.objects.filter(user_to=request.user, seen=False)
+        user_messages = Message.objects.filter(user_to=request.user, seen=False, receiver_deleted=False)
         return({"user_messages": user_messages})
 
     # make sure no error is returned if the user isn't logged in:

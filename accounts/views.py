@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages, auth
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
@@ -140,6 +141,7 @@ def edit_profile(request):
                 or baseform.fields["new_password2"].has_changed(None, data["new_password2"])):
                 request.user.set_password(data["new_password1"])
                 request.user.save()
+                update_session_auth_hash(request, request.user)
             # save the non-instrument profile details (location and max_distance)
             details = profile_form.save(commit=False)
             details.user = request.user

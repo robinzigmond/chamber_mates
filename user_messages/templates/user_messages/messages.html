@@ -10,7 +10,9 @@
                     {% if usermessages %}
                         <table class="table">
                             <thead>
-                                <th><button class="btn btn-danger btn-sm">Delete selected</button></th>
+                                <th><button class="btn btn-danger btn-sm" id="delete-selected" data-toggle="modal" data-target="#delete-modal">
+                                    Delete selected
+                                </button></th>
                                 <th>
                                     {% if view == "inbox" %}From{% else %}To{% endif %}
                                 </th>
@@ -75,7 +77,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-body">
-                    <p><strong>Are you sure you want to delete this message?</strong></p>
+                    <p><strong>Are you sure you want to delete <span id="plural">this message<</strong>?</p>
                     <a class="btn btn-danger" href="{% url 'delete' to_delete='1' view=view %}">Delete</a>
                     <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
                 </div>
@@ -84,7 +86,7 @@
     </div>
 
     <script type="text/javascript">
-        var pageSize = 2, currentPage = 1, total = {{ usermessages | length }};
+        var pageSize = 10, currentPage = 1, total = {{ usermessages | length }};
 
         function displayCorrectMessages() {
             for (var i=1; i<=total; i++) {
@@ -124,6 +126,30 @@
             var djangoUrl = $(".modal-body a").attr("href");
             var newUrl = djangoUrl.replace(/\d+$/, id);
             $(".modal-body a").attr("href", newUrl);
+            $("#plural").text("this message");
+        });
+
+        $("#delete-selected").click(function() {
+            var checked = "";
+            for (var i=(currentPage-1)*pageSize+1; i<=total && i<=currentPage*pageSize; i++) {
+                if ($("#message-"+i+" input").is(":checked")) {
+                    if (checked=="") {
+                        checked += i;
+                    }
+                    else {
+                        checked += "-"+i;
+                    }
+                }
+            }
+            var djangoUrl = $(".modal-body a").attr("href");
+            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, checked);
+            $(".modal-body a").attr("href", newUrl);
+            if (checked.indexOf("-") == -1) {
+                $("#plural").text("this message");
+            }
+            else {
+                $("#plural").text("these messages");    
+            }        
         });
     </script>
 

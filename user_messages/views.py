@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.shortcuts import render, redirect
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from .models import Message
@@ -13,7 +14,7 @@ def inbox(request):
     """
     A view for displaying the user's message inbox
     """
-    user_messages = Message.objects.filter(user_to=request.user, receiver_deleted=False)
+    user_messages = Message.objects.filter(user_to=request.user, receiver_deleted=False).order_by("-sent_date")
     return render(request, "user_messages/messages.html", {"active": "dashboard", "view": "inbox",
                                                   "usermessages": user_messages})
 
@@ -23,7 +24,7 @@ def outbox(request):
     """
     A view for displaying the user's sent messages
     """
-    user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False)
+    user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False).order_by("-sent_date")
     return render(request, "user_messages/messages.html", {"active": "dashboard", "view": "outbox",
                                                            "usermessages": user_messages})
 
@@ -40,9 +41,9 @@ def delete(request, to_delete, view):
         raise Http404("Page not found")
 
     if view == "inbox":
-        user_messages = Message.objects.filter(user_to=request.user, receiver_deleted=False)
+        user_messages = Message.objects.filter(user_to=request.user, receiver_deleted=False).order_by("-sent_date")
     else:
-        user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False)
+        user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False).order_by("-sent_date")
     
     indices_to_delete = map(int, to_delete.split("-"))
     msgs = []
@@ -71,4 +72,9 @@ def delete(request, to_delete, view):
             else:
                 msg.save()
 
+    if len(msgs)>1:
+        success_str = "Messages successfully deleted!"
+    else:
+        success_str = "Message successfully deleted!"
+    messages.success(request, success_str)
     return redirect(reverse(view))

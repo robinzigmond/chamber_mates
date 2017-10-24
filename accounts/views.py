@@ -223,7 +223,11 @@ def matches(request):
     # matches = {"violin": {"piano": ["Peter", "Jane", "John"], "cello": ["Bob"]},
     #            "oboe": {"piano": ["Lucy", "Robin"]}}
 
-    profile = Profile.objects.get(user=request.user)
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        messages.error(request, "Oops, something went wrong! Try completing your profile first!")
+        return redirect(reverse("edit_profile"))
     max_dist = profile.max_distance.distance
     user_location = profile.location
     close_enough = User.objects.filter(profile__location__distance_lte=(user_location,

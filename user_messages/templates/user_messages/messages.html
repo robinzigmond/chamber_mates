@@ -8,7 +8,7 @@
                 </h2>
                 <div class="message-list">
                     {% if usermessages %}
-                        <table class="table">
+                        <table class="table table-striped table-responsive">
                             <thead>
                                 <th><button class="btn btn-danger btn-sm" id="delete-selected" data-toggle="modal" data-target="#delete-modal">
                                     Delete selected
@@ -22,12 +22,16 @@
                             </thead>
                             <tbody>
                                 {% for message in usermessages %}
-                                    <tr id="message-{{ forloop.counter }}">
+                                    <tr id="message-no-{{ forloop.counter }}">
                                         <td>
-                                            <input type="checkbox">
+                                            <input type="checkbox" id="message-pk-{{ message.pk }}">
                                         </td>
                                         <td>
-                                            <a href="{% url 'user_profile' username=message.user_from %}">
+                                            <a  {% if view == "inbox" %}
+                                                    href="{% url 'user_profile' username=message.user_from %}"
+                                                {% else %}
+                                                    href="{% url 'user_profile' username=message.user_to %}"
+                                                {% endif %}>
                                                 {% if view == "inbox" %}
                                                     {{ message.user_from }}
                                                 {% else %}
@@ -92,10 +96,10 @@
         function displayCorrectMessages() {
             for (var i=1; i<=total; i++) {
                 if (i<=(currentPage-1)*pageSize || i>currentPage*pageSize) {
-                    $("#message-"+i).hide();
+                    $("#message-no-"+i).hide();
                 }
                 else {
-                    $("#message-"+i).show();
+                    $("#message-no-"+i).show();
                 }
             }
         }
@@ -123,29 +127,23 @@
         });
 
         $(".modal-delete").click(function() {
-            var id=$(this).parents("tr").attr("id").slice(8);  // slice off "message-" from id to give just the number
+            var pk=$(this).parents("tr[id^='message-no-']").find("input[id^='message-pk-']")
+                          .attr("id").slice(11);  // slice off "message-pk-" from id to give just the number
             var djangoUrl = $(".modal-body a").attr("href");
-            var newUrl = djangoUrl.replace(/\d+$/, id);
+            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, pk);
             $(".modal-body a").attr("href", newUrl);
             $("#plural").text("this message");
         });
 
         $("#delete-selected").click(function() {
-            var checked = "";
-            for (var i=(currentPage-1)*pageSize+1; i<=total && i<=currentPage*pageSize; i++) {
-                if ($("#message-"+i+" input").is(":checked")) {
-                    if (checked=="") {
-                        checked += i;
-                    }
-                    else {
-                        checked += "-"+i;
-                    }
-                }
-            }
+            var checkedPkString = $("input[id^='message-pk-']:checked").map(function() {
+                console.log(this.id.slice(11));
+                return this.id.slice(11);
+            }).get().join("-");
             var djangoUrl = $(".modal-body a").attr("href");
-            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, checked);
+            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, checkedPkString);
             $(".modal-body a").attr("href", newUrl);
-            if (checked.indexOf("-") == -1) {
+            if (checkedPkString.indexOf("-") == -1) {
                 $("#plural").text("this message");
             }
             else {

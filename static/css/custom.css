@@ -190,6 +190,6 @@ tr.first-wanted td:first-child {
     color: darkturquoise;
 }
 
-tr[id^="message-"] {
+tr[id^="message-no-"] {
     display: none;
 }

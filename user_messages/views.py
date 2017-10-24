@@ -45,20 +45,14 @@ def delete(request, to_delete, view):
     else:
         user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False).order_by("-sent_date")
     
-    indices_to_delete = map(int, to_delete.split("-"))
+    ids_to_delete = map(int, to_delete.split("-"))
     msgs = []
 
-    # there are 2 separate loops here, one to fetch the messages to delete, the second one to delete them
-    # it is not done in a single loop, because of the risk that the deletion would change the starting querySet,
-    # and result in the wrong messages being deleted.
-    # I do not know if this would actually happen, but the way below seems safer!
+    for key in ids_to_delete:
+        msgs.append(user_messages.get(pk=key))
 
-    for index in indices_to_delete:
-        msgs.append(user_messages[index-1])
-        # need to be careful to shift the index down by 1, because the "incoming" indices are 1-based, whereas
-        # list indices are 0-based
         
-    for msg in msgs:    
+    for msg in msgs:
         if view=="inbox":
             msg.receiver_deleted=True
             if msg.sender_deleted:

@@ -236,9 +236,9 @@ def matches(request):
     instruments_played = UserInstrument.objects.filter(user=request.user)
 
     for played in instruments_played:
-        instruments_wanted = played.desired_instruments
+        instruments_wanted = played.desired_instruments.all()
         standards_wanted = played.accepted_standards.values("standard")
-        for wanted in instruments_wanted.all():
+        for wanted in instruments_wanted:
             for user in close_enough:
                 # we don't want to match anyone with themselves!
                 if user == request.user:
@@ -255,6 +255,13 @@ def matches(request):
                             instrument_matches[wanted.instrument] = [user.username]
                     except KeyError:
                         matches[played.instrument.instrument] = {wanted.instrument: [user.username]}
+            # add empty array to the dict if no matches were found, so that the user is informed of the
+            # lack of any matches
+            try:
+                if wanted.instrument not in matches[played.instrument.instrument].keys():
+                    matches[played.instrument.instrument][wanted.instrument] = []
+            except KeyError:
+                matches[played.instrument.instrument] = {wanted.instrument: []}
 
     return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches})
 

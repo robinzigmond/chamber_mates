@@ -24,8 +24,12 @@
                                         <td>{{ instr | capfirst }}</td>
                                         <td>
                                             <p class="num-matches">
-                                                {{ users | length }} match{{ users | length | pluralize:"es" }}
-                                                <span class="clickable show-it">Show</span>
+                                                {% if users %}
+                                                    {{ users | length }} match{{ users | length | pluralize:"es" }}
+                                                    <span class="clickable show-it">Show</span>
+                                                {% else %}
+                                                    No matches
+                                                {% endif %}
                                             </p>
                                             <ul class="user-match-list">
                                                 {% for user in users %}

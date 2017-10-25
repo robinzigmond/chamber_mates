@@ -3,6 +3,7 @@ import views
 
 urlpatterns = [
     url(r"^$", views.inbox, name="inbox"),
-    url(r"^sent/$", views.outbox, name="outbox"),
+    url(r"^sent/$", views.outbox, name="sent"),
     url(r"^delete/(?P<view>\w+)/(?P<to_delete>[\d+][-\d+]*)$", views.delete, name="delete"),
+    url(r"^(?P<view>\w+)/(?P<msg_id>\d+)$", views.view_msg, name="view_msg")
 ]

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block content %}
     <div class="container">
         <div class="row">
@@ -40,7 +41,7 @@
                                             </a>
                                         </td>
                                         <td>
-                                            <a href="#" {% if not message.seen %}class="unread-message"{% endif %}>
+                                            <a href="{% url 'view_msg' view=view msg_id=message.pk %}" {% if not message.seen %}class="unread-message"{% endif %}>
                                                 {{ message.title }}
                                             </a>
                                         </td>
@@ -62,7 +63,7 @@
                     {% endif %}
                     <div id="dashboard-buttons">
                         {% if view == "inbox" %}
-                            <button class="btn btn-success" onclick="location.href='{% url "outbox" %}';">
+                            <button class="btn btn-success" onclick="location.href='{% url "sent" %}';">
                                 Sent messages
                             </button>
                         {% else %}
@@ -77,79 +78,11 @@
         </div>
     </div>
 
-    <!-- Modal for confirmation of deleting messages -->
-    <div class="modal fade" id="delete-modal" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <p><strong>Are you sure you want to delete <span id="plural">this message<</strong>?</p>
-                    <a class="btn btn-danger" href="{% url 'delete' to_delete='1' view=view %}">Delete</a>
-                    <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include "user_messages/delete-modal.html" %}
 
+    <script src="{% static 'js/messages.js' %}" type="text/javascript"></script>
     <script type="text/javascript">
-        var pageSize = 10, currentPage = 1, total = {{ usermessages | length }};
-
-        function displayCorrectMessages() {
-            for (var i=1; i<=total; i++) {
-                if (i<=(currentPage-1)*pageSize || i>currentPage*pageSize) {
-                    $("#message-no-"+i).hide();
-                }
-                else {
-                    $("#message-no-"+i).show();
-                }
-            }
-        }
-
-        function updateText() {
-            $("#first").text(currentPage);
-            $("#total").text(Math.ceil(total/pageSize));
-        }
-
-        $(document).ready(function() {
-            displayCorrectMessages();
-            updateText();
-        });
-
-        $("#next-button").click(function() {
-            currentPage = Math.min(currentPage+1, Math.ceil(total/pageSize));
-            displayCorrectMessages();
-            updateText();
-        });
-
-        $("#prev-button").click(function() {
-            currentPage = Math.max(currentPage-1, 1);
-            displayCorrectMessages();
-            updateText();
-        });
-
-        $(".modal-delete").click(function() {
-            var pk=$(this).parents("tr[id^='message-no-']").find("input[id^='message-pk-']")
-                          .attr("id").slice(11);  // slice off "message-pk-" from id to give just the number
-            var djangoUrl = $(".modal-body a").attr("href");
-            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, pk);
-            $(".modal-body a").attr("href", newUrl);
-            $("#plural").text("this message");
-        });
-
-        $("#delete-selected").click(function() {
-            var checkedPkString = $("input[id^='message-pk-']:checked").map(function() {
-                console.log(this.id.slice(11));
-                return this.id.slice(11);
-            }).get().join("-");
-            var djangoUrl = $(".modal-body a").attr("href");
-            var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, checkedPkString);
-            $(".modal-body a").attr("href", newUrl);
-            if (checkedPkString.indexOf("-") == -1) {
-                $("#plural").text("this message");
-            }
-            else {
-                $("#plural").text("these messages");    
-            }        
-        });
+        messageBox({{ usermessages | length }});
     </script>
 
 {% endblock %}

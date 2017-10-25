@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>{{ msg.title }}</h3>
+                <p>
+                    <strong>From: </strong>
+                    {% if user == msg.user_from %}
+                        <span class="my-username">{{ msg.user_from }}</span>
+                    {% else %}
+                        <a href="{% url 'user_profile' username=msg.user_from.username %}">{{ msg.user_from }}</a>
+                    {% endif %}
+                </p>
+                <p>
+                    <strong>To: </strong>
+                    {% if user == msg.user_to %}
+                        <span class="my-username">{{ msg.user_to }}</span>
+                    {% else %}
+                        <a href="{% url 'user_profile' username=msg.user_to.username %}">{{ msg.user_to }}</a>
+                    {% endif %}
+                </p>
+                <div class="message-text">
+                    <p>{{ msg.message }}</p>
+                </div>
+                <div id="dashboard-buttons">
+                    {% if user == msg.user_to %}
+                        <button class="btn btn-success">Reply</button>
+                    {% endif %}
+                    <button class="btn btn-danger" id="delete" data-toggle="modal" data-target="#delete-modal">Delete</button>
+                    <button class="btn btn-success" onclick="location.href='{% url view %}';">Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "user_messages/delete-modal.html" %}
+
+    <script type="text/javascript">
+        $("#delete").click(function() {
+            var djangoUrl = $(".modal-body a").attr("href");
+            var newUrl = djangoUrl.replace(/[\d+]$/, {{ msg.pk }});
+            $(".modal-body a").attr("href", newUrl);           
+        });
+    </script>
+    
+{% endblock %}

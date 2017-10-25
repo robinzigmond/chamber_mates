@@ -193,3 +193,17 @@ tr.first-wanted td:first-child {
 tr[id^="message-no-"] {
     display: none;
 }
+
+.my-username {
+    color: yellowgreen;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.message-text {
+    background-color: #737373;
+    color: white;
+    padding: 5px;
+    border: 1px solid black;
+    margin-top: 15px;
+}

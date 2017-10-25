@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -25,7 +26,7 @@ def outbox(request):
     A view for displaying the user's sent messages
     """
     user_messages = Message.objects.filter(user_from=request.user, sender_deleted=False).order_by("-sent_date")
-    return render(request, "user_messages/messages.html", {"active": "dashboard", "view": "outbox",
+    return render(request, "user_messages/messages.html", {"active": "dashboard", "view": "sent",
                                                            "usermessages": user_messages})
 
 
@@ -37,7 +38,7 @@ def delete(request, to_delete, view):
     receiver_deleted fields are for. The message is only actually deleted when both these fields are set to
     True.
     """
-    if view not in ["inbox", "outbox"]:
+    if view not in ["inbox", "sent"]:
         raise Http404("Page not found")
 
     if view == "inbox":
@@ -72,3 +73,29 @@ def delete(request, to_delete, view):
         success_str = "Message successfully deleted!"
     messages.success(request, success_str)
     return redirect(reverse(view))
+
+
+@login_required(login_url=reverse_lazy("login"))
+def view_msg(request, view, msg_id):
+    """
+    View to fetch and display a single post
+    """
+    if view not in ["inbox", "sent"]:
+        raise Http404("Page not found")
+
+    msg = get_object_or_404(Message, pk=msg_id)
+
+    # make sure the user is allowed to see the message:
+    if msg.user_to != request.user and msg.user_from != request.user:
+        raise PermissionDenied
+    
+    # mark the message as read, if the current user is the receiver:
+    if msg.user_to == request.user:
+        msg.seen = True
+        msg.save()
+
+    # the main reason for passing the "view" to the template is so that it can be passed back to
+    # the "delete" view when deleting the post. The delete view, in turn, only requires this so that
+    # when accessed from the inbox/outbox it knows where to direct the user to.
+    # It also allows the "return to inbox/outbox" button to know which text it should have.
+    return render(request, "user_messages/view_msg.html", {"active": "dashboard", "view": view, "msg": msg})

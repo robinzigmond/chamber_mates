@@ -53,7 +53,18 @@ def delete(request, to_delete, view):
     msgs = []
 
     for key in ids_to_delete:
-        msgs.append(user_messages.get(pk=key))
+        try:
+            msg = user_messages.get(pk=key)
+            msgs.append(msg)
+        except Message.DoesNotExist:
+            # this exception should not arise during "normal" use - but if for some reason a user
+            # enters one of the "delete" URLs manually, we need to handle the case where the messages
+            # does not exist.
+            # This also serves the very important purpose of preventing maliciously deleting another
+            # user's messages by typing the URL to delet it directly. (Since the messages have already
+            # been filtered into the "legal" ones, any such attempt will raise this DoesNotExist error.)
+            messages.error(request, "Unable to delete the specified messages")
+            return redirect(reverse(view))
 
         
     for msg in msgs:

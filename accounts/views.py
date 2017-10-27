@@ -136,6 +136,7 @@ def edit_profile(request):
             data = baseform.cleaned_data
             if baseform.fields["email"].has_changed(request.user.email, data["email"]):
                 request.user.email = data["email"]
+                request.user.save()
             if (baseform.fields["current_password"].has_changed(None, data["current_password"])
                 or baseform.fields["new_password1"].has_changed(None, data["new_password1"])
                 or baseform.fields["new_password2"].has_changed(None, data["new_password2"])):

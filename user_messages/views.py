@@ -5,9 +5,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
+from django.template.context_processors import csrf
 from .models import Message
+from .forms import MessageForm
 
 # Create your views here.
 @login_required(login_url=reverse_lazy("login"))
@@ -99,3 +102,31 @@ def view_msg(request, view, msg_id):
     # when accessed from the inbox/outbox it knows where to direct the user to.
     # It also allows the "return to inbox/outbox" button to know which text it should have.
     return render(request, "user_messages/view_msg.html", {"active": "dashboard", "view": view, "msg": msg})
+
+
+@login_required(login_url=reverse_lazy("login"))
+def new_msg(request, to=None):
+    """
+    View to handle the form for writing/sending a new message
+    """
+    if to:
+        user_to = get_object_or_404(User, username=to)
+    else:
+        user_to = None
+    if request.method == "POST":
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.user_from = request.user
+            message.save()
+            messages.success(request, "Your message was sent to "+message.user_to.username+" !")
+            return redirect(reverse("inbox"))
+        else:
+            messages.error(request, "Please correct the highlighted errors:")
+
+    else:
+        form = MessageForm(initial={"user_to": user_to})
+
+    args = {"active": "dashboard", "form": form}
+    args.update(csrf(request))
+    return render(request, "user_messages/new_msg.html", args)

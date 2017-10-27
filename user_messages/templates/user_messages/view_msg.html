@@ -25,7 +25,7 @@
                 </div>
                 <div id="dashboard-buttons">
                     {% if user == msg.user_to %}
-                        <button class="btn btn-success">Reply</button>
+                        <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=msg.user_from.username %}';">Reply</button>
                     {% endif %}
                     <button class="btn btn-danger" id="delete" data-toggle="modal" data-target="#delete-modal">Delete</button>
                     <button class="btn btn-success" onclick="location.href='{% url view %}';">Back</button>
@@ -39,7 +39,7 @@
     <script type="text/javascript">
         $("#delete").click(function() {
             var djangoUrl = $(".modal-body a").attr("href");
-            var newUrl = djangoUrl.replace(/[\d+]$/, {{ msg.pk }});
+            var newUrl = djangoUrl.replace(/(\d+)\/$/, {{ msg.pk }}+"/");
             $(".modal-body a").attr("href", newUrl);           
         });
     </script>

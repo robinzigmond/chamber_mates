@@ -38,18 +38,17 @@ function messageBox(total) {
         var pk=$(this).parents("tr[id^='message-no-']").find("input[id^='message-pk-']")
                       .attr("id").slice(11);  // slice off "message-pk-" from id to give just the number
         var djangoUrl = $(".modal-body a").attr("href");
-        var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, pk);
+        var newUrl = djangoUrl.replace(/(\d+)(-\d+)*\/$/, pk+"/");
         $(".modal-body a").attr("href", newUrl);
         $("#plural").text("this message");
     });
 
     $("#delete-selected").click(function() {
         var checkedPkString = $("input[id^='message-pk-']:checked").map(function() {
-            console.log(this.id.slice(11));
             return this.id.slice(11);
         }).get().join("-");
         var djangoUrl = $(".modal-body a").attr("href");
-        var newUrl = djangoUrl.replace(/[\d+][-\d+]*$/, checkedPkString);
+        var newUrl = djangoUrl.replace(/(\d+)(-\d+)*\/$/, checkedPkString+"/");
         $(".modal-body a").attr("href", newUrl);
         if (checkedPkString.indexOf("-") == -1) {
             $("#plural").text("this message");

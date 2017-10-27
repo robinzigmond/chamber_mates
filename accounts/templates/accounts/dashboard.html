@@ -47,7 +47,7 @@
             </div>
         {% else %}
             <div class="col-xs-12">
-                <button class="btn btn-success">Send message to {{ id }}</button>
+                <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message to {{ id }}</button>
             </div>
         {% endif %}
     </div>

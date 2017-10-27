@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     "accounts",
     "mapwidgets",
     "django_forms_bootstrap",
-    "user_messages"
+    "user_messages",
+    "ajax_select"
 ]
 
 MIDDLEWARE = [

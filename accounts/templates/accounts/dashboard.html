@@ -1,55 +1,55 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-xs-12">
-            <h2>{% if editable %}
-                    Welcome back,
-                {% else %}
-                    Public profile for
-                {% endif %}
-                {{ id.username }}
-                {% if editable %}!{% endif %}
-            </h2>
-        </div>
-        <div class="col-xs-12">
-            {% if editable %}
-                <h3>Your public details:</h3>
-            {% endif %}
-            <ul>
-                <li>Location: {{ location }}</li>
-                <li>Looking for players within <strong>{{ profile.max_distance }} miles</strong>.</li>
-            </ul>
-            {% for instrument in instruments.all %}
-                <div class="instrument-description">
-                    <p><strong>{{ instrument.instrument | capfirst }}</strong> player seeking players of the following instruments:</p>
-                    <ul>
-                        {% for instr in instrument.desired_instruments.all %}
-                            <li>{{ instr.instrument }}</li>
-                        {% endfor %}
-                    </ul>
-                    <p>of the following standards:</p>
-                    <ul>
-                        {% for standard in instrument.accepted_standards.all %}
-                            <li>{{ standard.standard }}</li>
-                        {% endfor %}
-                    </ul>
-                    Self-assessed standard on {{ instrument.instrument }}: "{{ instrument.standard }}".
-                </div>
-            {% endfor %}
-        </div>
-        {% if editable %}
-            <div class="col-xs-12" id="dashboard-buttons">
-                <button class="btn btn-success" onclick="location.href='{% url "edit_profile" %}';">Edit profile</button>
-                <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
-                <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">My messages</button>
-                <button class="btn btn-success">My groups</button>
-            </div>
-        {% else %}
+    <div class="container">
+        <div class="row">
             <div class="col-xs-12">
-                <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message to {{ id }}</button>
+                <h2>{% if editable %}
+                        Welcome back,
+                    {% else %}
+                        Public profile for
+                    {% endif %}
+                    {{ id.username }}
+                    {% if editable %}!{% endif %}
+                </h2>
             </div>
-        {% endif %}
+            <div class="col-xs-12">
+                {% if editable %}
+                    <h3>Your public details:</h3>
+                {% endif %}
+                <ul>
+                    <li>Location: {{ location }}</li>
+                    <li>Looking for players within <strong>{{ profile.max_distance }} miles</strong>.</li>
+                </ul>
+                {% for instrument in instruments.all %}
+                    <div class="instrument-description">
+                        <p><strong>{{ instrument.instrument | capfirst }}</strong> player seeking players of the following instruments:</p>
+                        <ul>
+                            {% for instr in instrument.desired_instruments.all %}
+                                <li>{{ instr.instrument }}</li>
+                            {% endfor %}
+                        </ul>
+                        <p>of the following standards:</p>
+                        <ul>
+                            {% for standard in instrument.accepted_standards.all %}
+                                <li>{{ standard.standard }}</li>
+                            {% endfor %}
+                        </ul>
+                        Self-assessed standard on {{ instrument.instrument }}: "{{ instrument.standard }}".
+                    </div>
+                {% endfor %}
+            </div>
+            {% if editable %}
+                <div class="col-xs-12" id="dashboard-buttons">
+                    <button class="btn btn-success" onclick="location.href='{% url "edit_profile" %}';">Edit profile</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">My messages</button>
+                    <button class="btn btn-success">My groups</button>
+                </div>
+            {% else %}
+                <div class="col-xs-12">
+                    <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message to {{ id }}</button>
+                </div>
+            {% endif %}
+        </div>
     </div>
-</div>
 {% endblock %}

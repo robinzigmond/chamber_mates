@@ -121,7 +121,7 @@ def new_msg(request, to=None):
     View to handle the form for writing/sending a new message
     """
     if to:
-        user_to = get_object_or_404(User, username=to)
+        user_to = get_object_or_404(User, username=to).username
     else:
         user_to = None
     if request.method == "POST":
@@ -129,6 +129,7 @@ def new_msg(request, to=None):
         if form.is_valid():
             message = form.save(commit=False)
             message.user_from = request.user
+            message.user_to = form.cleaned_data["user_to"]
             message.save()
             messages.success(request, "Your message was sent to "+message.user_to.username+" !")
             return redirect(reverse("inbox"))
@@ -137,6 +138,38 @@ def new_msg(request, to=None):
 
     else:
         form = MessageForm(initial={"user_to": user_to})
+
+    args = {"active": "dashboard", "form": form}
+    args.update(csrf(request))
+    return render(request, "user_messages/new_msg.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def reply(request, reply_to):
+    """
+    Modified version of the "new post" view to handle replying to a specific message
+    """
+    if request.method == "POST":
+        # form handling is EXACTLY as for any other new post:
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.user_from = request.user
+            message.user_to = form.cleaned_data["user_to"]
+            message.save()
+            messages.success(request, "Your message was sent to "+message.user_to.username+" !")
+            return redirect(reverse("inbox"))
+        else:
+            messages.error(request, "Please correct the highlighted errors:")
+
+    else:
+        # we prepopulate the form with the user, title and previous message:
+        msg = get_object_or_404(Message, pk=reply_to)
+        if msg.user_to != request.user and msg.user_from != request.user:
+            raise PermissionDenied    
+        form = MessageForm(initial={"user_to": msg.user_from.username,
+                                    "title": "RE: "+msg.title,
+                                    "message": "----------Replying to:----------\n"+msg.message})
 
     args = {"active": "dashboard", "form": form}
     args.update(csrf(request))

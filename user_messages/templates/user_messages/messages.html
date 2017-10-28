@@ -8,61 +8,61 @@
                     Your {% if view == "inbox" %} inbox {% else %} sent messages {% endif %} 
                 </h2>
                 <div class="message-list">
-                    <div class="table-responsive">
                     {% if usermessages %}
-                        <table class="table table-striped">
-                            <thead>
-                                <th><button class="btn btn-danger btn-sm" id="delete-selected" data-toggle="modal" data-target="#delete-modal">
-                                    <span class="glyphicon glyphicon-trash" aria-hidden="true" aria-label="delete selected"></span>
-                                </button></th>
-                                <th>
-                                    {% if view == "inbox" %}From{% else %}To{% endif %}
-                                </th>
-                                <th>Title</th>
-                                <th>Sent</th>
-                                <th>Seen</th>
-                                <th></th>
-                            </thead>
-                            <tbody>
-                                {% for message in usermessages %}
-                                    <tr id="message-no-{{ forloop.counter }}">
-                                        <td>
-                                            <input type="checkbox" id="message-pk-{{ message.pk }}">
-                                        </td>
-                                        <td>
-                                            <a  {% if view == "inbox" %}
-                                                    href="{% url 'user_profile' username=message.user_from %}"
-                                                {% else %}
-                                                    href="{% url 'user_profile' username=message.user_to %}"
-                                                {% endif %}>
-                                                {% if view == "inbox" %}
-                                                    {{ message.user_from }}
-                                                {% else %}
-                                                    {{ message.user_to }}
+                        <div class="table-responsive"></div>
+                            <table class="table table-striped">
+                                <thead>
+                                    <th><button class="btn btn-danger btn-sm" disabled id="delete-selected" data-toggle="modal" data-target="#delete-modal">
+                                        <span class="glyphicon glyphicon-trash" aria-hidden="true" aria-label="delete selected"></span>
+                                    </button></th>
+                                    <th>
+                                        {% if view == "inbox" %}From{% else %}To{% endif %}
+                                    </th>
+                                    <th>Title</th>
+                                    <th>Sent</th>
+                                    <th>Seen</th>
+                                    <th></th>
+                                </thead>
+                                <tbody>
+                                    {% for message in usermessages %}
+                                        <tr id="message-no-{{ forloop.counter }}">
+                                            <td>
+                                                <input type="checkbox" id="message-pk-{{ message.pk }}">
+                                            </td>
+                                            <td>
+                                                <a  {% if view == "inbox" %}
+                                                        href="{% url 'user_profile' username=message.user_from %}"
+                                                    {% else %}
+                                                        href="{% url 'user_profile' username=message.user_to %}"
+                                                    {% endif %}>
+                                                    {% if view == "inbox" %}
+                                                        {{ message.user_from }}
+                                                    {% else %}
+                                                        {{ message.user_to }}
+                                                    {% endif %}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'view_msg' view=view msg_id=message.pk %}" {% if not message.seen %}class="unread-message"{% endif %}>
+                                                    {{ message.title }}
+                                                </a>
+                                            </td>
+                                            <td>{{ message.sent_date }}</td>
+                                            <td>
+                                                {% if message.seen_date %}
+                                                    {{ message.seen_date }}
                                                 {% endif %}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'view_msg' view=view msg_id=message.pk %}" {% if not message.seen %}class="unread-message"{% endif %}>
-                                                {{ message.title }}
-                                            </a>
-                                        </td>
-                                        <td>{{ message.sent_date }}</td>
-                                        <td>
-                                            {% if message.seen_date %}
-                                                {{ message.seen_date }}
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-danger btn-sm modal-delete" data-toggle="modal" data-target="#delete-modal">
-                                                <span class="glyphicon glyphicon-trash" aria-hidden="true" aria-label="delete"></span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-danger btn-sm modal-delete" data-toggle="modal" data-target="#delete-modal">
+                                                    <span class="glyphicon glyphicon-trash" aria-hidden="true" aria-label="delete"></span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                         <p>Page <span id="first">1</span> of <span id="total">1</span></p>
                         <button class="btn btn-default btn-sm" id="prev-button">Prev</button>
                         <button class="btn btn-default btn-sm" id="next-button">Next</button>

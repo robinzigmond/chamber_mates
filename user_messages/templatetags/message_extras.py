@@ -12,4 +12,4 @@ def preserve_whitespace(value):
     found how to implement the latter from StackOverflow posts and in particular
     https://djangosnippets.org/snippets/2842/
     """
-    return linebreaksbr(mark_safe("&nbsp;".join(value.split(' '))))
+    return linebreaksbr(mark_safe("&nbsp;".join(value.split(" "))))

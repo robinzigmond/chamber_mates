@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.template.context_processors import csrf
+from django.utils import timezone
 from .models import Message
 from .forms import MessageForm
 
@@ -106,6 +107,7 @@ def view_msg(request, view, msg_id):
     # mark the message as read, if the current user is the receiver:
     if msg.user_to == request.user:
         msg.seen = True
+        msg.seen_date = timezone.now()
         msg.save()
 
     # the main reason for passing the "view" to the template is so that it can be passed back to

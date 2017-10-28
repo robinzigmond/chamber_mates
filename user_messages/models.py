@@ -15,6 +15,7 @@ class Message(models.Model):
     sender_deleted = models.BooleanField(default=False)
     receiver_deleted = models.BooleanField(default=False)
     sent_date = models.DateTimeField(default=timezone.now)
+    seen_date = models.DateTimeField(null=True)
 
     def __unicode__(self):
         return self.title

@@ -51,10 +51,10 @@ function messageBox(total) {
         var newUrl = djangoUrl.replace(/(\d+)(-\d+)*\/$/, checkedPkString+"/");
         $(".modal-body a").attr("href", newUrl);
         if (checkedPkString.indexOf("-") == -1) {
-            $("#plural").text("this message");
+            $("#plural").text("the selected message");
         }
         else {
-            $("#plural").text("these messages");    
+            $("#plural").text("the selected messages");    
         }        
     });
 }

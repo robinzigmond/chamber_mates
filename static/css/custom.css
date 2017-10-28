@@ -185,6 +185,14 @@ tr.first-wanted td:first-child {
     cursor: pointer;
 }
 
+.message-list {
+    margin-top: 20px;
+}
+
+.message-list table {
+    margin-top: 0;
+}
+
 .unread-message {
     font-weight: bold;
     color: darkturquoise;

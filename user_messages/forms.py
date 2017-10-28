@@ -8,7 +8,8 @@ class MessageForm(forms.ModelForm):
     """
     The form a user fills in when creating a new message
     """
-    user_to = AutoCompleteField("usernames", required=False, help_text=None)
+    user_to = AutoCompleteField("usernames", required=False, help_text=None,
+                                label="To")
 
     class Meta:
         model = Message

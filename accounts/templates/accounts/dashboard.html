@@ -38,18 +38,17 @@
                     </div>
                 {% endfor %}
             </div>
-            {% if editable %}
-                <div class="col-xs-12" id="dashboard-buttons">
+            <div class="col-xs-12" id="dashboard-buttons">
+                {% if editable %}
                     <button class="btn btn-success" onclick="location.href='{% url "edit_profile" %}';">Edit profile</button>
                     <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
                     <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">My messages</button>
                     <button class="btn btn-success">My groups</button>
-                </div>
-            {% else %}
-                <div class="col-xs-12">
-                    <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message to {{ id }}</button>
-                </div>
-            {% endif %}
+                {% else %}
+                    <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+                {% endif %}
+            </div>
         </div>
     </div>
 {% endblock %}

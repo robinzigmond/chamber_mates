@@ -7,13 +7,13 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.contrib.gis.measure import Distance
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms import modelformset_factory
 from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.conf import settings
 from googlemaps import Client
+from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument
 
@@ -21,7 +21,7 @@ from .models import Profile, UserInstrument, Instrument
 def get_profile_details(user):
     """
     helper function to look up a user's profile details. Used on both the "dashboard" page
-    (where it applies to the logged-in user) and the generi "profiles" pages where users can
+    (where it applies to the logged-in user) and the generic "profiles" pages where users can
     browse the profiles of other users:
     """
     profile = get_object_or_404(User, pk=user.pk).profile
@@ -51,6 +51,52 @@ def get_profile_details(user):
         comma_location = place.find(",")
         address_string = place[comma_location+1:]
     return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
+
+
+def match_details(user_1, user_2):
+    """
+    This function tests user_2 against the match preferences of user_1. It returns None if
+    there is no match, and if there is one returns a dictionary with details of the match.
+
+    This dictionary has the following keys:
+    - user: a reference to the user_2 object, from which all details can of course be obtained
+    - distance: the distance in miles between the locations
+    - matches: a list of dictionaries, representing all pairs of instruments where a match was found.
+    Each such dict has 2 keys: - played: the instrument the matched user (user_2) plays
+                               - matches: the instrument that user_1 plays which user_2 matched against
+    """
+
+    # Note that we assume that user_1 has a valid profile. This code will raise
+    # an exception if that is not the case - but this is best handled when the
+    # is_match function is called, not within the function itself
+    profile = Profile.objects.get(user=user_1)
+    # but since we will typically run this for a fixed user_1 and let user_2 range over
+    # ALL users, we need to skip those with no profile yet!
+    try:
+        profile_to_test = Profile.objects.get(user=user_2)
+    except Profile.DoesNotExist:
+        return None
+    max_dist = profile.max_distance.distance
+    user_location = profile.location.coords[::-1]
+    location_to_test = profile_to_test.location.coords[::-1]
+    instruments_to_match = UserInstrument.objects.filter(user=user_1)
+    instruments_played = UserInstrument.objects.filter(user=user_2)
+
+    dist = distance(user_location, location_to_test).miles
+    if dist>max_dist:
+        return None
+    
+    match_info = []
+    for instr in instruments_to_match:
+        possible_matches = instr.desired_instruments.all()
+        for candidate in instruments_played:
+            if candidate.instrument in possible_matches:
+                match_info.append({"played": candidate.instrument, "matches": instr.instrument}) 
+
+    if match_info == []:
+        return None
+
+    return {"user": user_2, "distance": dist, "matches": match_info}
 
 
 # Create your views here.
@@ -216,55 +262,29 @@ def login(request):
 def matches(request):
     """
     A view to handle displaying a list of all users matching the given user's search criteria
-    in their profile
+    in their profile. Most of the work is delegated to the "match_details" function defined
+    above.
     """
-    matches = {}
-    # sample output of matches, for a user who plays violin and oboe. As a violinist they are
-    # looking for a pianist and a cellist, and as an oboist they just want a pianist:
-    # matches = {"violin": {"piano": ["Peter", "Jane", "John"], "cello": ["Bob"]},
-    #            "oboe": {"piano": ["Lucy", "Robin"]}}
+    # form array of all match details, organised by user
+    match_info = []
+    for user in User.objects.all():
+        if user != request.user and match_details(request.user, user):
+            match_info.append(match_details(request.user, user))
 
-    try:
-        profile = Profile.objects.get(user=request.user)
-    except Profile.DoesNotExist:
-        messages.error(request, "Oops, something went wrong! Try completing your profile first!")
-        return redirect(reverse("edit_profile"))
-    max_dist = profile.max_distance.distance
-    user_location = profile.location
-    close_enough = User.objects.filter(profile__location__distance_lte=(user_location,
-                                                                        Distance(mi=max_dist)))
-
-    instruments_played = UserInstrument.objects.filter(user=request.user)
-
-    for played in instruments_played:
-        instruments_wanted = played.desired_instruments.all()
-        standards_wanted = played.accepted_standards.values("standard")
-        for wanted in instruments_wanted:
-            for user in close_enough:
-                # we don't want to match anyone with themselves!
-                if user == request.user:
-                    continue
-                if user.userinstrument_set.filter(instrument=wanted, 
-                                                  standard__standard__in=standards_wanted).exists():
-                    # we've found a match. Let's store these nicely in the nested "matches" dict
-                    try:
-                        instrument_matches = matches[played.instrument.instrument]
-                        try:
-                            wanted_matches = instrument_matches[wanted.instrument]
-                            wanted_matches.append(user.username)
-                        except KeyError:
-                            instrument_matches[wanted.instrument] = [user.username]
-                    except KeyError:
-                        matches[played.instrument.instrument] = {wanted.instrument: [user.username]}
-            # add empty array to the dict if no matches were found, so that the user is informed of the
-            # lack of any matches
+    # restructure this into a nested dict, of the following form:
+    # {"instrument_matched": {"instrument_played": {"instrument_name": ["user1", "user2"]}}}
+    matches_dict = {}
+    for user_match_details in match_info:
+        for match in user_match_details["matches"]:
             try:
-                if wanted.instrument not in matches[played.instrument.instrument].keys():
-                    matches[played.instrument.instrument][wanted.instrument] = []
+                matches_dict[match["matches"]][match["played"]].append(user_match_details["user"].username)
             except KeyError:
-                matches[played.instrument.instrument] = {wanted.instrument: []}
+                try:
+                    matches_dict[match["matches"]][match["played"]] = [user_match_details["user"].username]
+                except KeyError:
+                    matches_dict[match["matches"]] = {match["played"]: [user_match_details["user"].username]}
 
-    return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches})
+    return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches_dict})
 
 
 @login_required(login_url=reverse_lazy("login"))

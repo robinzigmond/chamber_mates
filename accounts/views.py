@@ -48,7 +48,7 @@ def get_profile_details(user):
         address_string = "Unknown"
     else:
         # remove first part of address - users will not want their full address to be publicly displayed!
-        # in fact, after seeing more results, it is better to remove the first 2 parts!
+        # in fact, after seeing more results, it is better to remove all but the last 2 parts!
         address_string = ",".join(place.split(",")[-2:])
     return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
 
@@ -91,7 +91,8 @@ def match_details(user_1, user_2):
         possible_matches = instr.desired_instruments.all()
         for candidate in instruments_played:
             if candidate.instrument in possible_matches:
-                match_info.append({"played": candidate.instrument, "matches": instr.instrument}) 
+                match_info.append({"played": candidate.instrument.instrument,
+                                   "matches": instr.instrument.instrument}) 
 
     if match_info == []:
         return None
@@ -272,17 +273,20 @@ def matches(request):
             match_info.append(match_details(request.user, user))
 
     # restructure this into a nested dict, of the following form:
-    # {"instrument_matched": {"instrument_played": {"instrument_name": ["user1", "user2"]}}}
+    # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}
     matches_dict = {}
-    for user_match_details in match_info:
-        for match in user_match_details["matches"]:
-            try:
-                matches_dict[match["matches"]][match["played"]].append(user_match_details["user"].username)
-            except KeyError:
-                try:
-                    matches_dict[match["matches"]][match["played"]] = [user_match_details["user"].username]
-                except KeyError:
-                    matches_dict[match["matches"]] = {match["played"]: [user_match_details["user"].username]}
+    played_list = UserInstrument.objects.filter(user=request.user)
+    for played in played_list.all():
+        matches_dict[played.instrument.instrument] = {}
+        want_list = played.desired_instruments.all()
+        for wanted in want_list:
+            matches_dict[played.instrument.instrument][wanted.instrument] = []
+            for user_match_details in match_info:
+                for match in user_match_details["matches"]:
+                    if match["played"] == wanted.instrument and \
+                    match["matches"] == played.instrument.instrument:
+                        matches_dict[played.instrument.instrument][wanted.instrument] \
+                        .append(user_match_details["user"].username)
 
     return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches_dict})
 

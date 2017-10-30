@@ -6,6 +6,7 @@
             <div class="col-xs-12">
                 {% if matches %}
                     <h3>Your matching users:</h3>
+                    <p>Where there are multiple matches, those nearest are shown first.</p>
                     <table class="table table-striped">
                         <thead>
                             <th>Your instrument</th>
@@ -33,10 +34,15 @@
                                             </p>
                                             <ul class="user-match-list">
                                                 {% for user in users %}
-                                                    <li>
-                                                        <a href="{% url 'user_profile' username=user %}">{{ user }}</a>
-                                                    </li>
+                                                    {% if forloop.counter <= limit %}
+                                                        <li>
+                                                            <a href="{% url 'user_profile' username=user %}">{{ user }}</a>
+                                                        </li>
+                                                    {% endif %}
                                                 {% endfor %}
+                                                {% if users|length > limit %}
+                                                    <a href="#">See all</a>
+                                                {% endif %}
                                                 <p class="clickable hide-it">Hide</p>
                                             </ul>
                                         </td>

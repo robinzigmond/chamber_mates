@@ -89,8 +89,9 @@ def match_details(user_1, user_2):
     match_info = []
     for instr in instruments_to_match:
         possible_matches = instr.desired_instruments.all()
+        standards = instr.accepted_standards.all()
         for candidate in instruments_played:
-            if candidate.instrument in possible_matches:
+            if candidate.instrument in possible_matches and candidate.standard in standards:
                 match_info.append({"played": candidate.instrument.instrument,
                                    "matches": instr.instrument.instrument}) 
 
@@ -271,6 +272,8 @@ def matches(request):
     for user in User.objects.all():
         if user != request.user and match_details(request.user, user):
             match_info.append(match_details(request.user, user))
+    # order results by distance, starting with nearest
+    match_info.sort(key=lambda match: match["distance"])
 
     # restructure this into a nested dict, of the following form:
     # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}
@@ -287,8 +290,9 @@ def matches(request):
                     match["matches"] == played.instrument.instrument:
                         matches_dict[played.instrument.instrument][wanted.instrument] \
                         .append(user_match_details["user"].username)
-
-    return render(request, "accounts/matches.html", {"active": "dashboard", "matches": matches_dict})
+                        
+    return render(request, "accounts/matches.html", {"active": "dashboard",
+                                                     "matches": matches_dict, "limit": 5})
 
 
 @login_required(login_url=reverse_lazy("login"))

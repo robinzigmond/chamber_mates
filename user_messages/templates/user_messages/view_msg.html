@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load message_extras %}
 {% block content %}
     <div class="container">
         <div class="row">
@@ -22,7 +21,7 @@
                     {% endif %}
                 </p>
                 <div class="message-text">
-                    <p>{{ msg.message | preserve_whitespace }}</p>
+                    <p>{{ msg.message }}</p>
                 </div>
                 <div id="dashboard-buttons">
                     {% if user == msg.user_to %}

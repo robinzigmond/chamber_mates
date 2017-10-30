@@ -48,8 +48,8 @@ def get_profile_details(user):
         address_string = "Unknown"
     else:
         # remove first part of address - users will not want their full address to be publicly displayed!
-        comma_location = place.find(",")
-        address_string = place[comma_location+1:]
+        # in fact, after seeing more results, it is better to remove the first 2 parts!
+        address_string = ",".join(place.split(",")[-2:])
     return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
 
 

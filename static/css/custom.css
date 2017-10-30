@@ -215,3 +215,7 @@ tr[id^="message-no-"] {
     border: 1px solid black;
     margin-top: 15px;
 }
+
+.message-text p {
+    white-space: pre-wrap;
+}

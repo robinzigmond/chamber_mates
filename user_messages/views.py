@@ -141,7 +141,7 @@ def new_msg(request, to=None):
     else:
         form = MessageForm(initial={"user_to": user_to})
 
-    args = {"active": "dashboard", "form": form}
+    args = {"active": "dashboard", "form": form, "reply": False}
     args.update(csrf(request))
     return render(request, "user_messages/new_msg.html", args)
 
@@ -171,8 +171,8 @@ def reply(request, reply_to):
             raise PermissionDenied    
         form = MessageForm(initial={"user_to": msg.user_from.username,
                                     "title": "RE: "+msg.title,
-                                    "message": "----------Replying to:----------\n"+msg.message})
+                                    "message": "\n\n----------Replying to----------\n"+msg.message})
 
-    args = {"active": "dashboard", "form": form}
+    args = {"active": "dashboard", "form": form, "reply": True}
     args.update(csrf(request))
     return render(request, "user_messages/new_msg.html", args)

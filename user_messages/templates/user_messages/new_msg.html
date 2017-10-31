@@ -27,6 +27,8 @@
             $("#div_id_user_to").insertBefore("#div_id_title");
             {% if reply %}
                 $("textarea#id_message").focus();
+            {% else %}
+                $("#id_title").focus();
             {% endif %}
         });
     </script>

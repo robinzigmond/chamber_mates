@@ -41,7 +41,7 @@
                                                     {% endif %}
                                                 {% endfor %}
                                                 {% if users|length > limit %}
-                                                    <a href="#">See all</a>
+                                                    <a href="{% url 'matches_detail' played=play want=instr %}">See all</a>
                                                 {% endif %}
                                                 <p class="clickable hide-it">Hide</p>
                                             </ul>

@@ -28,6 +28,8 @@ urlpatterns = [
     url(r"^profile/edit/$", accounts_views.edit_profile, name="edit_profile"),
     url(r"^login/$", accounts_views.login, name="login"),
     url(r"^matches/$", accounts_views.matches, name="matches"),
+    url(r"^matches/(?P<played>[a-zA-Z]+)/(?P<want>[a-zA-Z]+)/$",
+        accounts_views.matches_detail, name="matches_detail"),
     url(r"^profile/(?P<username>[\w@+-.]+)/$", accounts_views.profiles, name="user_profile"),
     url(r"^messages/", include("user_messages.urls"))
 ]

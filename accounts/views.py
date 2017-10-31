@@ -296,6 +296,30 @@ def matches(request):
 
 
 @login_required(login_url=reverse_lazy("login"))
+def matches_detail(request, played, want):
+    """
+    Simply fetches a list of all users matching a particular instrument preference
+    """
+    # form array of all match details, organised by user
+    match_info = []
+    for user in User.objects.all():
+        if user != request.user and match_details(request.user, user):
+            info = match_details(request.user, user)["matches"]
+            info = [match for match in info if match["matches"]==played and match["played"]==want]
+            if info:
+                match_details(request.user, user)["matches"] = info
+                match_info.append(match_details(request.user, user))
+    # order results by distance, starting with nearest
+    match_info.sort(key=lambda match: match["distance"])
+    
+    for match in match_info:
+        match["location"] = get_profile_details(match["user"])["location"]
+
+    return render(request, "accounts/matches_detail.html", {"active": "dashboard", "played": played,
+                                                            "want": want, "matches": match_info})
+
+
+@login_required(login_url=reverse_lazy("login"))
 def profiles(request, username):
     """
     A view to allow a specific user's public profile to be seen

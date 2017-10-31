@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>{{matches | length }} suitable {{ want }} player{{ matches | length | pluralize}} to join you on {{ played }}:</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <th>User</th>
+                        <th>Location</th>
+                        <th>Distance (miles)</th>
+                    </thead>
+                    <tbody>
+                        {% for match in matches %}
+                            <tr>
+                                <td><a href="{% url 'user_profile' username=match.user.username %}">
+                                    {{ match.user.username }}
+                                </a></td>
+                                <td>{{ match.location }}</td>
+                                <td>{{ match.distance|floatformat:0 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div id="dashboard-buttons">
+                    <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">
+                        Back to matches
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -85,7 +85,7 @@ class AccountRedirectTests(TestCase):
         # now give them a profile
         fifty_miles = Distance.objects.create(distance=50)
         Profile.objects.create(user=User.objects.get(username="user"),
-                               location=Point(-1, 53),
+                               location=Point(-1, 53, srid=4326),
                                max_distance=fifty_miles)
         with_profile = self.client.get("/dashboard/")
         self.assertEqual(with_profile.status_code, 200)
@@ -101,6 +101,10 @@ class ProfileTest(TestCase):
         Simulate submission of the profile form, and check that the database is updated
         as expected
         """
+        # this test does not currently work, mainly I think because I am not submitting
+        # the data correctly in the simulated POST request. I intend to come back to this
+        # later!
+
         # as before, create new user
         self.client.post("/register/", {"username": "user", "email": "address@example.com",
                                         "password1": "secretpwd", "password2": "secretpwd"})
@@ -111,27 +115,32 @@ class ProfileTest(TestCase):
         professional = Standard.objects.create(standard="professional")
         violin = Instrument.objects.create(instrument="violin")
         piano = Instrument.objects.create(instrument="piano")
-
+        new_violin = UserInstrument.objects.create(instrument=violin, standard=professional,
+                                                   desired_instruments=[piano, violin],
+                                                   accepted_standards=[professional])(False).pk
+        new_piano = UserInstrument.objects.create(instrument=piano, standard=professional,
+                                                   desired_instruments=[piano, violin],
+                                                   accepted_standards=[professional])(False).pk
         # create profile
         resp = self.client.post("/profile/edit/", {"email": "changed@example.com",
                                                    "current_password": "secretpwd",
                                                    "new_password1": "newpasswd",
                                                    "new_password2": "newpasswd",
-                                                   "location": Point(-1,53),
-                                                   "max_distance": fifty_miles,
+                                                   "location": Point(-1, 53),
+                                                   "max_distance": fifty_miles.pk,
                                                    "form-TOTAL_FORMS": 2,
                                                    "form-INITIAL_FORMS": 1,
                                                    "form-MAX_NUM_FORMS": 1000,
-                                                   "form-0-instrument": violin,
-                                                   "form-0-standard": professional,
-                                                   "form-0-desired_instruments": [piano, violin],
-                                                   "form-0-accepted_standards": [professional],
-                                                   "form-0-id": violin.pk,
+                                                   "form-0-instrument": violin.pk,
+                                                   "form-0-standard": professional.pk,
+                                                   "form-0-desired_instruments": [piano.pk, violin.pk],
+                                                   "form-0-accepted_standards": [professional.pk],
+                                                   "form-0-id": new_violin,
                                                    "form-1-instrument": piano,
-                                                   "form-1-standard": professional,
-                                                   "form-1-desired_instruments": [piano, violin],
-                                                   "form-1-accepted_standards": [professional],
-                                                   "form-1-id": piano.pk})
+                                                   "form-1-standard": professional.pk,
+                                                   "form-1-desired_instruments": [piano.pk, violin.pk],
+                                                   "form-1-accepted_standards": [professional.pk],
+                                                   "form-1-id": new_piano})
         # check response
         # self.assertEqual(resp.status_code, 302)
         self.assertRedirects(resp, "/dashboard/")

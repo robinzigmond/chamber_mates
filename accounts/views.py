@@ -15,7 +15,7 @@ from django.conf import settings
 from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
-from .models import Profile, UserInstrument, Instrument
+from .models import Profile, UserInstrument, Instrument, Match
 
 
 def get_profile_details(user):
@@ -53,52 +53,24 @@ def get_profile_details(user):
     return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
 
 
-def match_details(user_1, user_2):
+def match_details(match):
     """
-    This function tests user_2 against the match preferences of user_1. It returns None if
-    there is no match, and if there is one returns a dictionary with details of the match.
-
+    This function takes a Match instance from the corresponding table, and returns a
+    dictionary of usable data from it.
     This dictionary has the following keys:
-    - user: a reference to the user_2 object, from which all details can of course be obtained
+    - user: a reference to the object corresponding to the user matching the one
+    making the query, from which all details can of course be obtained
     - distance: the distance in miles between the locations
-    - matches: a list of dictionaries, representing all pairs of instruments where a match was found.
-    Each such dict has 2 keys: - played: the instrument the matched user (user_2) plays
-                               - matches: the instrument that user_1 plays which user_2 matched against
+    - played_instr: the instrument the "found" user plays
+    - matched_instr: the instrument that the "requesting plays which was matched against
     """
 
-    # Note that we assume that user_1 has a valid profile. This code will raise
-    # an exception if that is not the case - but this is best handled when the
-    # is_match function is called, not within the function itself
-    profile = Profile.objects.get(user=user_1)
-    # but since we will typically run this for a fixed user_1 and let user_2 range over
-    # ALL users, we need to skip those with no profile yet!
-    try:
-        profile_to_test = Profile.objects.get(user=user_2)
-    except Profile.DoesNotExist:
-        return None
-    max_dist = profile.max_distance.distance
-    user_location = profile.location.coords[::-1]
-    location_to_test = profile_to_test.location.coords[::-1]
-    instruments_to_match = UserInstrument.objects.filter(user=user_1)
-    instruments_played = UserInstrument.objects.filter(user=user_2)
+    location_1 = match.requesting_user.profile.location.coords[::-1]
+    location_2 = match.found_user.profile.location.coords[::-1]
+    dist = distance(location_2, location_2).miles
 
-    dist = distance(user_location, location_to_test).miles
-    if dist>max_dist:
-        return None
-    
-    match_info = []
-    for instr in instruments_to_match:
-        possible_matches = instr.desired_instruments.all()
-        standards = instr.accepted_standards.all()
-        for candidate in instruments_played:
-            if candidate.instrument in possible_matches and candidate.standard in standards:
-                match_info.append({"played": candidate.instrument.instrument,
-                                   "matches": instr.instrument.instrument}) 
-
-    if match_info == []:
-        return None
-
-    return {"user": user_2, "distance": dist, "matches": match_info}
+    return {"user": match.found_user, "distance": dist,
+            "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument}
 
 
 # Create your views here.
@@ -178,7 +150,6 @@ def edit_profile(request):
         baseform = UserUpdateForm(request.POST, user=request.user)
         profile_form = ProfileForm(request.POST)
         instrument_forms = instrument_FormSet(request.POST)
-        
         if baseform.is_valid() and profile_form.is_valid() and instrument_forms.is_valid():
             # save the new email and/or password - but only if the user tried to change it!
             data = baseform.cleaned_data
@@ -268,29 +239,26 @@ def matches(request):
     above.
     """
     # form array of all match details, organised by user
+    matches = Match.objects.filter(requesting_user=request.user)
     match_info = []
-    for user in User.objects.all():
-        if user != request.user and match_details(request.user, user):
-            match_info.append(match_details(request.user, user))
+    for match in matches.objects.all():
+        match_info.append(match_details(match))
     # order results by distance, starting with nearest
     match_info.sort(key=lambda match: match["distance"])
 
     # restructure this into a nested dict, of the following form:
     # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}
     matches_dict = {}
-    played_list = UserInstrument.objects.filter(user=request.user)
-    for played in played_list.all():
-        matches_dict[played.instrument.instrument] = {}
-        want_list = played.desired_instruments.all()
-        for wanted in want_list:
-            matches_dict[played.instrument.instrument][wanted.instrument] = []
-            for user_match_details in match_info:
-                for match in user_match_details["matches"]:
-                    if match["played"] == wanted.instrument and \
-                    match["matches"] == played.instrument.instrument:
-                        matches_dict[played.instrument.instrument][wanted.instrument] \
-                        .append(user_match_details["user"].username)
-                        
+    for match in match_info:
+        if match["matched_instr"] in matches_dict.keys():
+            if match["played_instr"] in matches_dict[match["matched_instr"]].keys():
+                matches_dict[match["matched_instr"]][match["played_instr"]].append(
+                    match["user"].username)
+            else:
+                matches_dict[match["matched_instr"]][match["played_instr"]] = [match["user"].username]
+        else:
+            matches_dict[match["matched_instr"]] = {match["played_instr"]: [match["user"].username]}
+
     return render(request, "accounts/matches.html", {"active": "dashboard",
                                                      "matches": matches_dict, "limit": 5})
 

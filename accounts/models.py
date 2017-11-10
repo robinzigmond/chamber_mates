@@ -71,3 +71,14 @@ class UserInstrument(models.Model):
 
     def __unicode__(self):
         return "%s, %s" %(self.user.username, self.instrument)
+
+
+class Match(models.Model):
+    """
+    This model is used to keep track of all matches between users
+    """
+    requesting_user = models.ForeignKey(User, related_name="match_looked_for")
+    found_user = models.ForeignKey(User, related_name="match_found")
+    requesting_instrument = models.ForeignKey(UserInstrument, related_name="match_looked_for")
+    found_instrument = models.ForeignKey(UserInstrument, related_name="match_found")
+    known = models.BooleanField(default=False)

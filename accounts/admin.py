@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 from django.contrib.gis.db import models
-from .models import Distance, Standard, Instrument, UserInstrument, Profile
+from .models import Distance, Standard, Instrument, UserInstrument, Profile, Match
 from mapwidgets.widgets import GooglePointFieldWidget
 
 # Register your models here.
@@ -18,3 +18,4 @@ admin.site.register(Standard)
 admin.site.register(Instrument)
 admin.site.register(UserInstrument)
 admin.site.register(Profile, ProfileAdmin)
+admin.site.register(Match)

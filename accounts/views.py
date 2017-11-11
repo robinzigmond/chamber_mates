@@ -12,10 +12,11 @@ from django.forms import modelformset_factory
 from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.conf import settings
+from django.contrib.gis.measure import Distance
 from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
-from .models import Profile, UserInstrument, Instrument, Match
+from .models import Profile, UserInstrument, Instrument, Match, Standard
 
 
 def get_profile_details(user):
@@ -71,6 +72,82 @@ def match_details(match):
 
     return {"user": match.found_user, "distance": dist,
             "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument}
+
+def update_matches(user, new_location=False, new_maxdist=False, new_instruments=False):
+    """
+    This function is called when a user updates their profile, in order to recalculate
+    all matches which they are involved in.
+    The optional keyword arguments are all booleans which are used to keep track of what
+    information the user has changed, in order to keep database manipulation to a minimum.
+    """
+    my_matches = Match.objects.filter(requesting_user=user)
+    matched_to_others = Match.objects.filter(found_user=user)
+
+    if new_location or new_maxdist or new_instruments:
+        # in any of these cases (which will almost certainly cover all times this
+        # function is actually called!) the user will potentially find new matches
+        # and/or lose old ones. So we recalculate the matches.
+        # First find all users who are close enough
+        close_enough = User.objects.filter(profile__location__distance_lte=(user.profile.location,
+                                           Distance(mi=user.profile.max_distance.distance)))
+        # then find all the matches of instrument and standard
+        my_instruments = UserInstrument.objects.filter(user=user)
+
+        for candidate in close_enough.all():
+            if candidate == user:
+                continue
+            their_instruments = UserInstrument.objects.filter(user=candidate)
+            for their_instr in their_instruments.all():
+                their_standard = their_instr.standard
+                for my_instr in my_instruments.all():
+                    # print their_instr.instrument, my_instr.desired_instruments.all(), their_instr in my_instr.desired_instruments.all()
+                    standards_to_accept = my_instr.accepted_standards
+                    if their_standard in standards_to_accept.all() \
+                    and their_instr.instrument in my_instr.desired_instruments.all():
+                        match = Match(requesting_user=user, found_user=candidate,
+                                      requesting_instrument=my_instr, found_instrument=their_instr)
+                        # mark the match as already seen if it existed (and was seen) before!
+                        try:
+                            prev_match = my_matches.get(requesting_user=user, found_user=candidate,
+                                                        requesting_instrument=my_instr,
+                                                        found_instrument=their_instr)
+                            match.known = prev_match.known
+                        except Match.DoesNotExist:
+                            pass
+                        match.save()
+        # finally, delete all the old matches!
+        my_matches.delete()
+    
+    if new_location or new_instruments:
+        # similar calculations to update the matches the relevant user has with others.
+        # We do not run this if only the max_distance has changed, because that has
+        # no effect on other users looking for a match
+        close_enough = User.objects.filter(profile__location__distance_lte=(user.profile.location,
+                                           Distance(mi=user.profile.max_distance.distance)))
+        my_instruments = UserInstrument.objects.filter(user=user)
+        
+        for candidate in close_enough.all():
+            if candidate == user:
+                continue
+            their_instruments = UserInstrument.objects.filter(user=candidate)
+            for my_instr in my_instruments.all():
+                my_standard = my_instr.standard
+                for their_instr in their_instruments.all():
+                    standards_to_accept = their_instr.accepted_standards
+                    if my_standard in standards_to_accept.all() \
+                    and my_instr.instrument in their_instr.desired_instruments.all():
+                        match = Match(requesting_user=candidate, found_user=user,
+                                      requesting_instrument=their_instr, found_instrument=my_instr)
+                        try:
+                            prev_match = matched_to_others.get(requesting_user=candidate,
+                                                               found_user=user,
+                                                               requesting_instrument=their_instr,
+                                                               found_instrument=my_instr)
+                            match.known=prev_match.known
+                        except Match.DoesNotExist:
+                            pass
+                        match.save()
+        matched_to_others.delete()
 
 
 # Create your views here.
@@ -177,7 +254,14 @@ def edit_profile(request):
             instruments = instrument_forms.save(commit=False)
             for instr in instruments:
                 instr.user = request.user
-            instrument_forms.save()            
+            instrument_forms.save()
+
+            # now update the matches. For this we need to know which information was changed
+            new_location = "location" in profile_form.changed_data
+            new_maxdist = "max_dist" in profile_form.changed_data
+            new_instruments = instrument_forms.has_changed()
+            update_matches(request.user, new_location, new_maxdist, new_instruments)
+
             verb = "updated" if complete else "completed"
             messages.success(request, "You have successfully "+verb+" your profile.")
             return redirect(reverse("dashboard"))
@@ -241,7 +325,7 @@ def matches(request):
     # form array of all match details, organised by user
     matches = Match.objects.filter(requesting_user=request.user)
     match_info = []
-    for match in matches.objects.all():
+    for match in matches.all():
         match_info.append(match_details(match))
     # order results by distance, starting with nearest
     match_info.sort(key=lambda match: match["distance"])
@@ -269,16 +353,10 @@ def matches_detail(request, played, want):
     Simply fetches a list of all users matching a particular instrument preference
     """
     # form array of all match details, organised by user
-    match_info = []
-    for user in User.objects.all():
-        if user != request.user and match_details(request.user, user):
-            info = match_details(request.user, user)["matches"]
-            info = [match for match in info if match["matches"]==played and match["played"]==want]
-            if info:
-                match_details(request.user, user)["matches"] = info
-                match_info.append(match_details(request.user, user))
-    # order results by distance, starting with nearest
-    match_info.sort(key=lambda match: match["distance"])
+    matches = Match.objects.filter(requesting_user=request.user,
+                                   requesting_instrument=played,
+                                   found_instrument=want)
+    match_info = [match_details(match) for match in matches.objects.all()]
     
     for match in match_info:
         match["location"] = get_profile_details(match["user"])["location"]

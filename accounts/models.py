@@ -82,3 +82,6 @@ class Match(models.Model):
     requesting_instrument = models.ForeignKey(UserInstrument, related_name="match_looked_for")
     found_instrument = models.ForeignKey(UserInstrument, related_name="match_found")
     known = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name_plural = "matches"

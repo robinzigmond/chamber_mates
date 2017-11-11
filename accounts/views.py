@@ -18,6 +18,7 @@ from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument, Match, Standard
 
+MATCHES_DISPLAY_LIMIT = 2  # small for testing purposes, will probably be 5 in production
 
 def get_profile_details(user):
     """
@@ -68,7 +69,7 @@ def match_details(match):
 
     location_1 = match.requesting_user.profile.location.coords[::-1]
     location_2 = match.found_user.profile.location.coords[::-1]
-    dist = distance(location_2, location_2).miles
+    dist = distance(location_1, location_2).miles
 
     return {"user": match.found_user, "distance": dist,
             "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument}
@@ -100,24 +101,20 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
             for their_instr in their_instruments.all():
                 their_standard = their_instr.standard
                 for my_instr in my_instruments.all():
-                    # print their_instr.instrument, my_instr.desired_instruments.all(), their_instr in my_instr.desired_instruments.all()
                     standards_to_accept = my_instr.accepted_standards
-                    if their_standard in standards_to_accept.all() \
-                    and their_instr.instrument in my_instr.desired_instruments.all():
+                    if standards_to_accept.filter(standard=their_standard.standard).exists() \
+                    and my_instr.desired_instruments.filter(instrument=their_instr.instrument).exists():
                         match = Match(requesting_user=user, found_user=candidate,
                                       requesting_instrument=my_instr, found_instrument=their_instr)
-                        # mark the match as already seen if it existed (and was seen) before!
+                        # see if the match previously existed, and only save the new one if it didn't
                         try:
                             prev_match = my_matches.get(requesting_user=user, found_user=candidate,
                                                         requesting_instrument=my_instr,
                                                         found_instrument=their_instr)
-                            match.known = prev_match.known
                         except Match.DoesNotExist:
-                            pass
-                        match.save()
-        # finally, delete all the old matches!
-        my_matches.delete()
-    
+                            match.save()
+
+
     if new_location or new_instruments:
         # similar calculations to update the matches the relevant user has with others.
         # We do not run this if only the max_distance has changed, because that has
@@ -134,8 +131,8 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                 my_standard = my_instr.standard
                 for their_instr in their_instruments.all():
                     standards_to_accept = their_instr.accepted_standards
-                    if my_standard in standards_to_accept.all() \
-                    and my_instr.instrument in their_instr.desired_instruments.all():
+                    if standards_to_accept.filter(standard=my_standard.standard).exists() \
+                    and their_instr.desired_instruments.filter(instrument=my_instr.instrument).exists():
                         match = Match(requesting_user=candidate, found_user=user,
                                       requesting_instrument=their_instr, found_instrument=my_instr)
                         try:
@@ -143,11 +140,9 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                                                                found_user=user,
                                                                requesting_instrument=their_instr,
                                                                found_instrument=my_instr)
-                            match.known=prev_match.known
                         except Match.DoesNotExist:
                             pass
-                        match.save()
-        matched_to_others.delete()
+                            match.save()
 
 
 # Create your views here.
@@ -334,17 +329,18 @@ def matches(request):
     # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}
     matches_dict = {}
     for match in match_info:
-        if match["matched_instr"] in matches_dict.keys():
-            if match["played_instr"] in matches_dict[match["matched_instr"]].keys():
-                matches_dict[match["matched_instr"]][match["played_instr"]].append(
-                    match["user"].username)
+        matched = match["matched_instr"].instrument
+        played = match["played_instr"].instrument
+        if matched in matches_dict.keys():
+            if played in matches_dict[matched].keys():
+                matches_dict[matched][played].append(match["user"].username)
             else:
-                matches_dict[match["matched_instr"]][match["played_instr"]] = [match["user"].username]
+                matches_dict[matched][played] = [match["user"].username]
         else:
-            matches_dict[match["matched_instr"]] = {match["played_instr"]: [match["user"].username]}
-
+            matches_dict[matched] = {played: [match["user"].username]}
     return render(request, "accounts/matches.html", {"active": "dashboard",
-                                                     "matches": matches_dict, "limit": 5})
+                                                     "matches": matches_dict,
+                                                     "limit": MATCHES_DISPLAY_LIMIT})
 
 
 @login_required(login_url=reverse_lazy("login"))
@@ -353,13 +349,15 @@ def matches_detail(request, played, want):
     Simply fetches a list of all users matching a particular instrument preference
     """
     # form array of all match details, organised by user
-    matches = Match.objects.filter(requesting_user=request.user,
-                                   requesting_instrument=played,
-                                   found_instrument=want)
-    match_info = [match_details(match) for match in matches.objects.all()]
+    my_matches = Match.objects.filter(requesting_user=request.user,
+                                      requesting_instrument__instrument__instrument=played,
+                                      found_instrument__instrument__instrument=want)
+    match_info = [match_details(match) for match in my_matches.all()]
     
     for match in match_info:
         match["location"] = get_profile_details(match["user"])["location"]
+
+    match_info.sort(key=lambda match: match["distance"])
 
     return render(request, "accounts/matches_detail.html", {"active": "dashboard", "played": played,
                                                             "want": want, "matches": match_info})

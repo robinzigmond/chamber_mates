@@ -85,3 +85,7 @@ class Match(models.Model):
 
     class Meta:
         verbose_name_plural = "matches"
+
+    def __unicode__(self):
+        return "%s-%s for %s-%s" %(self.found_user.username, self.found_instrument.instrument,
+                                   self.requesting_user.username, self.requesting_instrument.instrument)

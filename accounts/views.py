@@ -114,6 +114,17 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                         except Match.DoesNotExist:
                             match.save()
 
+        # finally, delete all previous matches which no longer fit:
+        for match in my_matches.all():
+            if match.found_user not in close_enough \
+            or match.requesting_instrument not in my_instruments.all():
+                match.delete()
+            for my_instr in my_instruments.all():
+                standards_to_accept = my_instr.accepted_standards
+                if match.requesting_instrument == my_instr:
+                    if match.found_instrument.instrument not in my_instr.desired_instruments.all() \
+                    or match.found_instrument.standard not in standards_to_accept.all():
+                        match.delete()
 
     if new_location or new_instruments:
         # similar calculations to update the matches the relevant user has with others.
@@ -141,8 +152,19 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                                                                requesting_instrument=their_instr,
                                                                found_instrument=my_instr)
                         except Match.DoesNotExist:
-                            pass
                             match.save()
+ 
+        for match in matched_to_others.all():
+            their_instruments = UserInstrument.objects.filter(user=match.requesting_user)
+            if match.requesting_user not in close_enough \
+            or match.found_instrument not in their_instruments.all():
+                match.delete()
+            for their_instr in their_instruments.all():
+                standards_to_accept = their_instr.accepted_standards.all()
+                if match.requesting_instrument == their_instr:
+                    if match.found_instrument.instrument not in my_instruments.all() \
+                    or match.found_instrument.standard not in standards_to_accept.all():
+                        match.delete()
 
 
 # Create your views here.

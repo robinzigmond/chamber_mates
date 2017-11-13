@@ -106,14 +106,12 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                     standards_to_accept = my_instr.accepted_standards
                     if standards_to_accept.filter(standard=their_standard.standard).exists() \
                     and my_instr.desired_instruments.filter(instrument=their_instr.instrument).exists():
-                        match = Match(requesting_user=user, found_user=candidate,
-                                      requesting_instrument=my_instr, found_instrument=their_instr)
                         # see if the match previously existed, and only save the new one if it didn't
-                        try:
-                            prev_match = my_matches.get(requesting_user=user, found_user=candidate,
-                                                        requesting_instrument=my_instr,
-                                                        found_instrument=their_instr)
-                        except Match.DoesNotExist:
+                        if not my_matches.filter(requesting_user=user, found_user=candidate,
+                                                 requesting_instrument=my_instr,
+                                                 found_instrument=their_instr).exists():
+                            match = Match(requesting_user=user, found_user=candidate,
+                                          requesting_instrument=my_instr, found_instrument=their_instr)
                             match.save()
 
         # finally, delete all previous matches which no longer fit:
@@ -153,25 +151,23 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
                     standards_to_accept = their_instr.accepted_standards
                     if standards_to_accept.filter(standard=my_standard.standard).exists() \
                     and their_instr.desired_instruments.filter(instrument=my_instr.instrument).exists():
-                        match = Match(requesting_user=candidate, found_user=user,
-                                      requesting_instrument=their_instr, found_instrument=my_instr)
-                        try:
-                            prev_match = matched_to_others.get(requesting_user=candidate,
-                                                               found_user=user,
-                                                               requesting_instrument=their_instr,
-                                                               found_instrument=my_instr)
-                        except Match.DoesNotExist:
+                        if not matched_to_others.filter(requesting_user=candidate,
+                                                        found_user=user,
+                                                        requesting_instrument=their_instr,
+                                                        found_instrument=my_instr).exists():
+                            match = Match(requesting_user=candidate, found_user=user,
+                                          requesting_instrument=their_instr, found_instrument=my_instr)
                             match.save()
  
         for match in matched_to_others.all():
             their_instruments = UserInstrument.objects.filter(user=match.requesting_user)
             if match.requesting_user not in close_enough \
-            or match.found_instrument not in their_instruments.all():
+            or match.found_instrument not in my_instruments.all():
                 match.delete()
             for their_instr in their_instruments.all():
                 standards_to_accept = their_instr.accepted_standards.all()
                 if match.requesting_instrument == their_instr:
-                    if match.found_instrument.instrument not in my_instruments.all() \
+                    if match.found_instrument.instrument not in their_instr.desired_instruments.all() \
                     or match.found_instrument.standard not in standards_to_accept.all():
                         match.delete()
 

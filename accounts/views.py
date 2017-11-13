@@ -11,8 +11,10 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.forms import modelformset_factory
 from django.template.context_processors import csrf
 from django.db import IntegrityError
+from django.db.models import F
 from django.conf import settings
 from django.contrib.gis.measure import Distance
+from django.contrib.gis.db.models.functions import Distance as get_distance
 from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
@@ -130,8 +132,15 @@ def update_matches(user, new_location=False, new_maxdist=False, new_instruments=
         # similar calculations to update the matches the relevant user has with others.
         # We do not run this if only the max_distance has changed, because that has
         # no effect on other users looking for a match
-        close_enough = User.objects.filter(profile__location__distance_lte=(user.profile.location,
-                                           Distance(mi=user.profile.max_distance.distance)))
+
+        # first we need a more complicated definition for "close_enough", because we are measure
+        # not to the "fixed" max_distance of the requesting user, but relative to each other user's
+        # own max_distance value
+        distances = User.objects.annotate(distance=get_distance("profile__location",
+                                                                user.profile.location)/1609.344)
+        # using manual conversion from meters to miles, because get_distance does NOT return a Distance
+        # object with methods to easily convert between units
+        close_enough = distances.filter(distance__lte=F("profile__max_distance__distance"))
         my_instruments = UserInstrument.objects.filter(user=user)
         
         for candidate in close_enough.all():

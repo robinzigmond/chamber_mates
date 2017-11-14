@@ -57,7 +57,7 @@ def get_profile_details(user):
     return {"id": user, "location": address_string, "profile": profile, "instruments": instruments}
 
 
-def match_details(match):
+def match_details(match, viewing=False):
     """
     This function takes a Match instance from the corresponding table, and returns a
     dictionary of usable data from it.
@@ -72,6 +72,14 @@ def match_details(match):
     location_1 = match.requesting_user.profile.location.coords[::-1]
     location_2 = match.found_user.profile.location.coords[::-1]
     dist = distance(location_1, location_2).miles
+
+    if viewing:
+        # update the "known" and "mark_new" status of the match. This controls whether the user
+        # is notified of it as a new match, and how it is displayed on the matches page.
+        if match.known:
+            match.mark_new = False
+        else:
+            match.known = True
 
     return {"user": match.found_user, "distance": dist,
             "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument}
@@ -344,13 +352,12 @@ def matches(request):
     in their profile. Most of the work is delegated to the "match_details" function defined
     above.
     """
-    # form array of all match details, organised by user
-    matches = Match.objects.filter(requesting_user=request.user)
+    # form array of all match details, organised by user. And ordered by distance, but with
+    # all "new" matches first
+    matches = Match.objects.filter(requesting_user=request.user).order_by("-mark_new", "distance")
     match_info = []
     for match in matches.all():
-        match_info.append(match_details(match))
-    # order results by distance, starting with nearest
-    match_info.sort(key=lambda match: match["distance"])
+        match_info.append(match_details(match, viewing=True))
 
     # restructure this into a nested dict, of the following form:
     # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}

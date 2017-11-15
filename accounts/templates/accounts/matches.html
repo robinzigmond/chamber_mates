@@ -22,25 +22,33 @@
                                                 {{ play | capfirst }}
                                             {% endif %}    
                                         </td>
-                                        <td>{{ instr | capfirst }}</td>
+                                        <td>
+                                            {{ instr | capfirst }}
+                                            {% if users.num_new > 0 %}
+                                                <span class="new-match">new matches</span>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <p class="num-matches">
                                                 {% if users %}
-                                                    {{ users | length }} match{{ users | length | pluralize:"es" }}
+                                                    {{ users.matches | length }} match{{ users.matches | length | pluralize:"es" }}
                                                     <span class="clickable show-it">Show</span>
                                                 {% else %}
                                                     No matches
                                                 {% endif %}
                                             </p>
                                             <ul class="user-match-list">
-                                                {% for user in users %}
-                                                    {% if forloop.counter <= limit %}
+                                                {% for user in users.matches %}
+                                                    {% if forloop.counter <= limit or user.new %}
                                                         <li>
-                                                            <a href="{% url 'user_profile' username=user %}">{{ user }}</a>
+                                                            <a href="{% url 'user_profile' username=user.username %}">{{ user.username }}</a>
+                                                            {% if user.new %}
+                                                                <span class="new-match">new</span>
+                                                            {% endif %}
                                                         </li>
                                                     {% endif %}
                                                 {% endfor %}
-                                                {% if users|length > limit %}
+                                                {% if users.matches|length > limit and users.matches|length > users.num_new %}
                                                     <a href="{% url 'matches_detail' played=play want=instr %}">See all</a>
                                                 {% endif %}
                                                 <p class="clickable hide-it">Hide</p>

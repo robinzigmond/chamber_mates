@@ -173,6 +173,13 @@ tr.first-wanted td:first-child {
     padding: 0;
 }
 
+.new-match {
+    font-weight: bold;
+    background-color: #dc1144;
+    margin-left: 5px;
+    padding: 0 3px;
+}
+
 .clickable {
     text-decoration: underline;
 }

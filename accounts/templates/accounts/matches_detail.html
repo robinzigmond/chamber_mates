@@ -15,6 +15,9 @@
                             <tr>
                                 <td><a href="{% url 'user_profile' username=match.user.username %}">
                                     {{ match.user.username }}
+                                    {% if match.new %}
+                                        <span class="new-match">new</span>
+                                    {% endif %}
                                 </a></td>
                                 <td>{{ match.location }}</td>
                                 <td>{{ match.distance|floatformat:0 }}</td>

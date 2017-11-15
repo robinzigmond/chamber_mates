@@ -80,9 +80,12 @@ def match_details(match, viewing=False):
             match.mark_new = False
         else:
             match.known = True
+        match.save()
 
     return {"user": match.found_user, "distance": dist,
-            "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument}
+            "played_instr": match.found_instrument, "matched_instr": match.requesting_instrument,
+            "new": match.mark_new}
+
 
 def update_matches(user, new_location=False, new_maxdist=False, new_instruments=False):
     """
@@ -352,26 +355,42 @@ def matches(request):
     in their profile. Most of the work is delegated to the "match_details" function defined
     above.
     """
-    # form array of all match details, organised by user. And ordered by distance, but with
-    # all "new" matches first
-    matches = Match.objects.filter(requesting_user=request.user).order_by("-mark_new", "distance")
+    # form array of all match details, organised by user
+    matches = Match.objects.filter(requesting_user=request.user)
     match_info = []
     for match in matches.all():
         match_info.append(match_details(match, viewing=True))
+    # order by distance, but putting new matches first:
+    def sort_func(match):
+        return (match["distance"]-10000) if match["new"] else match["distance"]
+    match_info.sort(key=sort_func)
 
     # restructure this into a nested dict, of the following form:
-    # {"instrument_matched": {"instrument_played": ["user1", "user2"]}}
+    # {"instrument_matched": {"instrument_played": {"matches": [{username: "user1", "new": False}, 
+    #                                                           {username: "user2": "new": True}],
+    #                                               "num_new": 1}}},
+    # - here the boolean value "new" indicates whether the match is "new" or not, and
+    # "num_new" just counts the number of matches that are indeed new (which is
+    # needed for the template)
     matches_dict = {}
     for match in match_info:
-        matched = match["matched_instr"].instrument
-        played = match["played_instr"].instrument
+        matched = match["matched_instr"].instrument.instrument
+        played = match["played_instr"].instrument.instrument
         if matched in matches_dict.keys():
             if played in matches_dict[matched].keys():
-                matches_dict[matched][played].append(match["user"].username)
+                matches_dict[matched][played]["matches"].append({"username": match["user"].username,
+                                                                 "new": match["new"]})
             else:
-                matches_dict[matched][played] = [match["user"].username]
+                matches_dict[matched][played] = {"matches": [{"username": match["user"].username,
+                                                             "new": match["new"]}],
+                                                 "num_new": 1 if match["new"] else 0}
+            if match["new"]:
+                matches_dict[matched][played]["num_new"] += 1
         else:
-            matches_dict[matched] = {played: [match["user"].username]}
+            matches_dict[matched] = {played: {"matches": [{"username": match["user"].username,
+                                                           "new": match["new"]}],
+                                              "num_new": 1 if match["new"] else 0}}
+    
     return render(request, "accounts/matches.html", {"active": "dashboard",
                                                      "matches": matches_dict,
                                                      "limit": MATCHES_DISPLAY_LIMIT})

@@ -85,7 +85,7 @@ class Match(models.Model):
     # to inform the user whether there are any new matches, while "mark_new" is used to display
     # the new matches in a more eye-catching way in the matches template.
     # 2 separate fields are needed because, when the matches page is viewed, any "unknown" matches
-    # need to be marked as known, but without effecting their display as "new" matches.
+    # need to be marked as known, but without affecting their display as "new" matches.
     known = models.BooleanField(default=False)
     mark_new = models.BooleanField(default=True)
 

@@ -67,13 +67,22 @@
         {% endif %}
         {% block content %}
         {% endblock %}
-        {% if user_messages %}
-            <div class="container-fluid" id="new-messages">
-                <div class="row">
-                    <div class="col-xs-12">
-                        <a href="{% url 'inbox' %}">You have {{ user_messages | length }} new message{{ user_messages | length | pluralize }}!</a>
+        {% if user_messages or new_matches %}
+            <div class="container-fluid" id="notifications">
+                {% if user_messages %}
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <a href="{% url 'inbox' %}">You have {{ user_messages | length }} new message{{ user_messages | length | pluralize }}!</a>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
+                {% if new_matches %}
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <a href="{% url 'matches' %}">You have {{ new_matches | length }} potential new chambermate{{ new_matches | length | pluralize }}!</a>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         {% endif %}
     </body>

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Your groups</h2>
+                {% if groups %}
+                    {% for group in groups %}
+                        <h3><a href="#">{{ group.name }}</a></h3>
+                    {% endfor %}
+                {% else %}
+                    <p>
+                        You are not yet in any groups. Why not invite another user to join one - perhaps
+                        <a href="{% url 'matches' %}">one who matches your preferences</a>?
+                    </p>
+                {% endif %}
+                <button class="btn btn-success">Start new group</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

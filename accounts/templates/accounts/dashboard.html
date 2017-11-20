@@ -43,7 +43,7 @@
                     <button class="btn btn-success" onclick="location.href='{% url "edit_profile" %}';">Edit profile</button>
                     <button class="btn btn-success" onclick="location.href='{% url "matches" %}';">Matching users</button>
                     <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">My messages</button>
-                    <button class="btn btn-success">My groups</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">My groups</button>
                 {% else %}
                     <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message</button>
                     <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>

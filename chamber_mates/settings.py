@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     "django_forms_bootstrap",
     "user_messages",
     "ajax_select",
-    "donations"
+    "donations",
+    "groups"
 ]
 
 MIDDLEWARE = [

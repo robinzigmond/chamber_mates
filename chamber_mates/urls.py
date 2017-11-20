@@ -33,5 +33,6 @@ urlpatterns = [
         accounts_views.matches_detail, name="matches_detail"),
     url(r"^profile/(?P<username>[\w@+-.]+)/$", accounts_views.profiles, name="user_profile"),
     url(r"^messages/", include("user_messages.urls")),
-    url(r"^donate/$", donations_views.donate, name="donate")
+    url(r"^donate/$", donations_views.donate, name="donate"),
+    url(r"^groups/", include("groups.urls"))
 ]

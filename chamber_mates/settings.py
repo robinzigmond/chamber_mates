@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     "mapwidgets",
     "django_forms_bootstrap",
     "user_messages",
-    "ajax_select"
+    "ajax_select",
+    "donations"
 ]
 
 MIDDLEWARE = [
@@ -146,3 +147,7 @@ MAP_WIDGETS = {
     ),
     "GOOGLE_MAP_API_KEY": GOOGLE_MAP_API_KEY
 }
+
+# Stripe environment variables
+STRIPE_PUBLISHABLE = os.getenv("STRIPE_PUBLISHABLE", "pk_test_AjjVRbuE0roWmK3bOFkTXrWl")
+STRIPE_SECRET = os.getenv("STRIPE_SECRET", "sk_test_hSOzgeTqJC6jlTq12c3L9Gdq")

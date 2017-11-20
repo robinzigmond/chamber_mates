@@ -28,6 +28,23 @@ a {
     font-size: 28px;
 }
 
+#donate {
+    text-align: center;
+    background-color: #dc5526;
+    margin-top: -20px; /* bootstrap adds a margin-bottom of 20px to the navbar, this value "cancels
+    it out" to put the donate bar directly below hte navbar */
+    margin-bottom: 20px;
+    height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 15px;
+}
+
+#donate a {
+    color: white;
+}
+
 .message {
     border-radius: 5px;
     color: black;

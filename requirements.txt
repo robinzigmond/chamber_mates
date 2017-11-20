@@ -1,6 +1,6 @@
 astroid==1.5.3
 backports.functools-lru-cache==1.4
-certifi==2017.7.27.1
+certifi==2017.11.5
 chardet==3.0.4
 colorama==0.3.9
 configparser==3.5.0
@@ -21,5 +21,6 @@ pytz==2017.2
 requests==2.18.4
 singledispatch==3.4.0.3
 six==1.11.0
+stripe==1.75.0
 urllib3==1.22
 wrapt==1.10.11

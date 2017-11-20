@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load bootstrap_tags %}
+{% load static %}
+
+{% block load_media %}
+    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
+    <script type="text/javascript">
+        Stripe.publishableKey = "{{ publishable }}";
+    </script>
+    <script type="text/javascript" src="{% static 'js/stripe.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Donate to Chamber Mates</h2>
+                <p>
+                    We intend for Chamber Mates to be a completely free service, available to all musicians around
+                    the world. There are no plans to charge for its use, or to cover the site in advertising in
+                    order to make ends meet.
+                </p>
+                <p>
+                    But a service such as this one is not free to run, in either time or money. If you would
+                    like to show your appreciation for what we offer here - and also help to ensure that we
+                    can keep the site running under the terms above - please consider making a donation to us
+                    using the form below.
+                </p>
+                <p>
+                    All donations are greatly appreciated, and while we suggest $5, there is no minimum amount
+                    - please give no more than you can afford, and feel we deserve.
+                </p>
+                <form id="donation-form" method="post" action="">
+                    <div id="credit-card-errors" style="display:none">
+                        <div class="alert-message block-message error" id="stripe-error-message"></div>
+                    </div>
+                    {% csrf_token %}
+                    {{ form | as_bootstrap }}
+                    <div class="form-group">
+                        <button type="submit" id="submit-btn" class="btn btn-success">Confirm payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from home import views as home_views
 from accounts import views as accounts_views
+from donations import views as donations_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -31,5 +32,6 @@ urlpatterns = [
     url(r"^matches/(?P<played>[a-zA-Z]+)/(?P<want>[a-zA-Z]+)/$",
         accounts_views.matches_detail, name="matches_detail"),
     url(r"^profile/(?P<username>[\w@+-.]+)/$", accounts_views.profiles, name="user_profile"),
-    url(r"^messages/", include("user_messages.urls"))
+    url(r"^messages/", include("user_messages.urls")),
+    url(r"^donate/$", donations_views.donate, name="donate")
 ]

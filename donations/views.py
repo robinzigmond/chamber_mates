@@ -29,17 +29,17 @@ def donate(request):
                     card=form.cleaned_data["stripe_id"],
                 )
                 if customer.paid:
-                    messages.success(request, "Thank you for your payment!")
+                    messages.success(request, "Thank you very much for your donation!")
                     return redirect(reverse("dashboard"))
                 else:
                     messages.error(request, """Something went wrong with your payment!
                                                Please check your card details and try again.""")
             except stripe.error.CardError:
-                messages.error(request, "Your card was declined!")
+                messages.error(request, "Sorry, your card was declined.")
     else:
         form = DonationForm(initial={"amount":5})
 
-    args = {"active": "home", "form": form, "publishable": settings.STRIPE_PUBLISHABLE}
+    args = {"active": "donate", "form": form, "publishable": settings.STRIPE_PUBLISHABLE}
     args.update(csrf(request))
 
     return render(request, "donations/donate.html", args)

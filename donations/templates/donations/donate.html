@@ -8,6 +8,18 @@
         Stripe.publishableKey = "{{ publishable }}";
     </script>
     <script type="text/javascript" src="{% static 'js/stripe.js' %}"></script>
+    <!-- script to make sure the number display for the "amount" field is always to 2 decimal places -->
+    <script type="text/javascript">
+        $(function() {
+            function normaliseCurrencyInput() {
+                var amount = +$("#id_amount").val();
+                $("#id_amount").val(amount.toFixed(2));
+            }
+            normaliseCurrencyInput();
+            $("#id_amount").click(normaliseCurrencyInput);
+            $("#id_amount").blur(normaliseCurrencyInput);
+        });
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -30,6 +42,7 @@
                     All donations are greatly appreciated, and while we suggest $5, there is no minimum amount
                     - please give no more than you can afford, and feel we deserve.
                 </p>
+                <h4>Thank you for helping to support our site!</h4>
                 <form id="donation-form" method="post" action="">
                     <div id="credit-card-errors" style="display:none">
                         <div class="alert-message block-message error" id="stripe-error-message"></div>

@@ -31,6 +31,7 @@
                         <li {% if active == "home" %}class="active"{% endif %}><a href="{% url 'home' %}">Home</a></li>
                         <li {% if active == "why" %}class="active"{% endif %}><a href="{% url 'why' %}">Why Chamber Music?</a></li>
                         {% if user.is_authenticated %}
+                            <li {% if active == "donate" %}class="active"{% endif %}><a href="{% url 'donate' %}">Donate</a></li>
                             <li class="dropdown {% if active == "dashboard" %} active {% endif %}">
                                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                     Dashboard
@@ -53,7 +54,9 @@
                 </div>
             </div>
         </nav>
-        {% include "donations/donate-banner.html" %}
+        {% if user.is_authenticated and active != "donate" %}
+            {% include "donations/donate-banner.html" %}
+        {% endif %}
         {% if messages %}
             <div class="container-fluid">
                 {% for message in messages %}

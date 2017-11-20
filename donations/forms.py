@@ -15,4 +15,5 @@ class DonationForm(forms.Form):
     expiry_month = forms.ChoiceField(label="Month", choices=MONTH_CHOICES)
     expiry_year = forms.ChoiceField(label="Year", choices=YEAR_CHOICES)
     stripe_id = forms.CharField(widget=forms.HiddenInput)
-    amount = forms.FloatField(min_value=0)
+    amount = forms.FloatField(min_value=0, widget=forms.NumberInput(attrs={"step": "0.01"}),
+                              label="Amount (US$)")

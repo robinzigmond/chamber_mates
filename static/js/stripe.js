@@ -12,7 +12,6 @@ $(function() {
         Stripe.createToken(card, function(status, response) {
             if (status === 200) {
                 $("#credit-card-errors").hide();
-                console.log(response.id);
                 $("#id_stripe_id").val(response.id);
                 form.submit();
             }

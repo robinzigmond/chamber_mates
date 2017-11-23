@@ -37,17 +37,18 @@ def new_group(request):
             group = Group(name=request.POST.get("name"))
             group.save()
             group.desired_instruments=request.POST.get("desired_instruments")
-            my_instr = UserInstrument.objects.get(user=request.user,
-                                                  instrument=request.POST.get("instrument"))
+            my_instr = UserInstrument.objects.get(pk=request.POST.get("instrument"))
             group.members = (my_instr, request.POST.get("invited_instrument"))
             group.save()
             
+            invited_user = User.objects.get(username=request.POST.get("invited_user"))
+            invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument"))
             Invitation.objects.create(inviting_user=request.user,
-                                      invited_user=request.POST.get("invited_user"),
-                                      invited_instrument=request.POST.get("invited_instrument"),
+                                      invited_user=invited_user,
+                                      invited_instrument=invited_instrument,
                                       group=group)
-            messages.sucess(request, """Your new group %s has now been started! An invitation has been sent to
-                            %s""" % (request.POST.get("name"), request.POST.get("invited_user").username))
+            messages.success(request, """Your new group %s has now been started! An invitation has been sent to
+                            %s""" % (request.POST.get("name"), request.POST.get("invited_user")))
             return redirect(reverse("my_groups"))
 
         else:

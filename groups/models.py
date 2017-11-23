@@ -11,7 +11,7 @@ class Group(models.Model):
     A model for the Groups which users can invite other users to - in order to meet
     and make music together
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     members = models.ManyToManyField(UserInstrument)
     desired_instruments = models.ManyToManyField(Instrument)
 

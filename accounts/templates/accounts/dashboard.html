@@ -47,6 +47,7 @@
                 {% else %}
                     <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message</button>
                     <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "invite" username=id.username %}';">Invite to group</button>
                 {% endif %}
             </div>
         </div>

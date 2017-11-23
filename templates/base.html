@@ -42,7 +42,7 @@
                                     <li><a href="{% url 'edit_profile' %}">Edit Profile</a></li>
                                     <li><a href="{% url 'matches' %}">Matches</a></li>
                                     <li><a href="{% url 'inbox' %}">Messages</a></li>
-                                    <li><a href="#">My Groups</a></li>
+                                    <li><a href="{% url 'my_groups' %}">My Groups</a></li>
                                 </ul>
                             </li>
                             <li {% if active == "logout" %}class="active"{% endif %}><a href="{% url 'logout' %}">Logout ({{ user.username }})</a></li>

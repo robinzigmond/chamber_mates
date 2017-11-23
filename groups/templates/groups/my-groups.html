@@ -14,7 +14,7 @@
                         <a href="{% url 'matches' %}">one who matches your preferences</a>?
                     </p>
                 {% endif %}
-                <button class="btn btn-success">Start new group</button>
+                <button class="btn btn-success" onclick="location.href='{% url "new_group" %}'";>Start new group</button>
             </div>
         </div>
     </div>

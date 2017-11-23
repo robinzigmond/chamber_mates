@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap_tags %}
+
+{% block load_media %}
+    <script type="text/javascript" src="{% static 'lib/jquery-migrate-3.0.1.min.js' %}"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <form role="form" method="post" action="">
+                    {% csrf_token %}
+                    {{ form | as_bootstrap }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Invite to start group</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            // move "instrument" field to correct position
+            $("#div_id_instrument").insertBefore("#div_id_invited_user");
+
+            // insert label for invited_instrument field
+            var newDiv = $("<div id='div_id_invited_instrument'></div>");
+            newDiv.addClass("form-group");
+            var label = $("<label></label>");
+            label.attr("for", "id_invited_user");
+            label.addClass("control-label");
+            label.addClass("required-field");
+            label.text("Instrument you want them to play");
+            newDiv.append(label);
+            $("#div_id_invited_user").after(newDiv);
+
+            // setup ajax functionality (based on django-ajax-selects, with the "instruments" lookup defined
+            // in lookups.py) to set up the instrument selection options as soon as a user is selected
+            function makeRadioInput() {
+                var user = $("#id_invited_user").val();
+                $.ajax("/groups/ajax_select/ajax_lookup/instrument?term="+user, {"success": function(data) {
+                    $("#div_id_invited_instrument .radio").remove();
+                    var radioDiv = $("<div></div>");
+                    data.forEach(function(instr, index) {
+                        var newRadio = $("<div class='radio'></div>");
+                        var label = $("<label></label>");
+                        var input = $("<input type='radio' name='invited_instrument'>");
+                        input.attr({
+                            id: "id_invited_instrument"+index,
+                            value: instr.pk
+                        });
+                        label.append(input);
+                        label.append(instr.value);
+                        newRadio.append(label);
+                        radioDiv.append(newRadio);
+                    });
+                    newDiv.append(radioDiv);
+                }});
+            } 
+
+            $("#ui-id-1").click(makeRadioInput);
+            $("#id_invited_user").keyup(makeRadioInput);
+        });
+    </script>
+
+{% endblock %}

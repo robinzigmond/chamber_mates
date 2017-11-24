@@ -6,7 +6,7 @@
                 <h2>Your groups</h2>
                 {% if groups %}
                     {% for group in groups %}
-                        <h4><a href="#">{{ group.name }}</a></h4>
+                        <h4><a href="{% url 'group' id=group.pk %}">{{ group.name }}</a></h4>
                     {% endfor %}
                 {% else %}
                     <p>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -49,7 +49,7 @@ def new_group(request, username=""):
                     group.desired_instruments = []
 
                 my_instr = UserInstrument.objects.get(pk=request.POST.get("instrument"))
-                group.members = (my_instr, request.POST.get("invited_instrument"))
+                group.members = [my_instr]
                 group.save()
                 
                 invited_user = User.objects.get(username=request.POST.get("invited_user"))
@@ -78,3 +78,24 @@ def new_group(request, username=""):
     args = {"active": "dashboard", "form": form}
     args.update(csrf(request))
     return render(request, "groups/new.html", args)
+
+
+def group_detail(request, id):
+    """
+    A view to display the details of a group. The template will show different features
+    depending on if the current user is a member of that group or not
+    """
+    group = get_object_or_404(Group, pk=id)
+    
+    # test for membership
+    my_instruments = UserInstrument.objects.filter(user=request.user)
+    member = False
+    for instr in my_instruments:
+        if group in Group.objects.filter(members__in=[instr]):
+            member = True
+            break
+    
+    invites = Invitation.objects.filter(group=group)
+    
+    return render(request, "groups/detail.html", {"group": group, "member": member,
+                                                  "invites": invites})

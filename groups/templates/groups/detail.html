@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>{{ group.name }}</h2>
+                <h4>Members:</h4>
+                <ul>
+                    {% for instr in group.members.all %}
+                        <li>
+                            <a href="{% url 'user_profile' username=instr.user.username %}">
+                                {{ instr.user.username }}
+                            </a> 
+                            - {{ instr.instrument.instrument }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% if invites.all %}
+                    <h4>Users invited to join:</h4>
+                    <ul>
+                        {% for invite in invites.all %}
+                            <li>
+                                <a href="{% url 'user_profile' username=invite.invited_user.username %}">
+                                    {{ invite.invited_user.username }}
+                                </a>
+                                to play {{ invite.invited_instrument.instrument }}
+                            </li>                        
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                {% if group.desired_instruments.all %}
+                    <h4>Still looking for players of the following instruments.</h4>
+                    <p>(If you would like to join, try sending a message to one of the existing members!)</p>
+                    <ul>
+                        {% for desired in group.desired_instruments.all %}
+                            <li>{{ desired.instrument }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

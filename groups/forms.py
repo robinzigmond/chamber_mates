@@ -1,7 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from ajax_select.helpers import make_ajax_field
+from ajax_select.fields import AutoCompleteField
 from accounts.models import UserInstrument, Instrument
+from .models import Invitation
 
 
 class GroupSetupForm(forms.Form):
@@ -26,3 +28,31 @@ class GroupSetupForm(forms.Form):
                                                        widget=forms.CheckboxSelectMultiple(),
                                                        label="Other desired instruments",
                                                        required=False)
+
+class InvitationForm(forms.ModelForm):
+    """
+    A form for sending an invitation to a user to join an already-existing group
+    """
+    def __init__(self, *args, **kwargs):
+        instr = kwargs.pop("instr", None)
+        super(InvitationForm, self).__init__(*args, **kwargs)
+        self.fields["group"].empty_label = None
+        self.fields["group"].widget.choices = self.fields["group"].choices
+        self.fields["invited_instrument"].empty_label = None
+        self.fields["invited_instrument"].widget.choices = self.fields["invited_instrument"].choices
+        self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
+                                                         label="User to invite",
+                                                         help_text=None)
+
+    class Meta:
+        model = Invitation
+        fields = ["group", "invited_instrument"]
+        widgets = {"invited_instrument": forms.RadioSelect}
+
+
+    def clean_invited_user(self):
+        try:
+            data = self.cleaned_data["invited_user"]
+            return User.objects.get(username=data)
+        except User.DoesNotExist:
+            raise forms.ValidationError("Please enter an existing username")

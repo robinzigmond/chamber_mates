@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% load bootstrap_tags %}
+
+{% block load_media %}
+    <script type="text/javascript" src="{% static 'lib/jquery-migrate-3.0.1.min.js' %}"></script> 
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Find a {{ instrument }} player for group {{ group }}!</h2>
+                <form method="post" action="">
+                    {% csrf_token %}
+                    {{ form | as_bootstrap }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Send invitation</button>
+                    </div>                    
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

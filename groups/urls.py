@@ -7,5 +7,7 @@ urlpatterns = [
     url(r"^$", views.my_groups, name="my_groups"),
     url(r"^(?P<id>\d+)/$", views.group_detail, name="group"),
     url(r"^new/$", views.new_group, name="new_group"),
-    url(r"^invite/(?P<username>[\w@+-.]+)/$", views.new_group, name="invite")
+    url(r"^invite/(?P<username>[\w@+-.]+)/$", views.new_group, name="invite"),
+    url(r"^invite/(?P<group_id>\d+)/(?P<instr_name>[\w@+-.]+)$",
+        views.invite_for_instrument, name="specific_invite")
 ]

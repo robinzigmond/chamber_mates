@@ -26,8 +26,8 @@ class Invitation(models.Model):
     """
     inviting_user = models.ForeignKey(User, related_name="inviting")
     invited_user = models.ForeignKey(User, related_name="invited")
-    invited_instrument = models.ForeignKey(UserInstrument)
+    invited_instrument = models.ForeignKey(Instrument)
     group = models.ForeignKey(Group)
 
     def __unicode__(self):
-        return "%s to play %s for %s" % (self.invited_user, self.invited_instrument.instrument, self.group)
+        return "%s to play %s for %s" % (self.invited_user, self.invited_instrument, self.group)

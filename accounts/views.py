@@ -422,6 +422,10 @@ def profiles(request, username):
     A view to allow a specific user's public profile to be seen
     """
     user = get_object_or_404(User, username=username)
+    
+    if user == request.user:
+        return redirect(reverse("dashboard"))
+
     args = {"active": "dashboard", "editable": False}
     args.update(get_profile_details(user))
     return render(request, "accounts/dashboard.html", args)

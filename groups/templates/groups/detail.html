@@ -29,11 +29,20 @@
                     </ul>
                 {% endif %}
                 {% if group.desired_instruments.all %}
-                    <h4>Still looking for players of the following instruments.</h4>
-                    <p>(If you would like to join, try sending a message to one of the existing members!)</p>
+                    <h4>Still looking for players of the following instruments:</h4>
+                    {% if not member %}
+                        <p>(If you would like to join, try sending a message to one of the existing members!)</p>
+                    {% endif %}
                     <ul>
                         {% for desired in group.desired_instruments.all %}
-                            <li>{{ desired.instrument }}</li>
+                            <li>
+                                {{ desired.instrument }}
+                                {% if member %}
+                                    <button class="btn btn-sm btn-success" onclick="location.href='{% url "specific_invite" group_id=group.pk instr_name=desired.instrument %}';">
+                                        Invite someone!
+                                    </button>
+                                {% endif %}
+                            </li>
                         {% endfor %}
                     </ul>
                 {% endif %}

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.contrib import messages
@@ -8,9 +9,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.template.context_processors import csrf
 from django.db import IntegrityError
-from accounts.models import UserInstrument
+from accounts.models import UserInstrument, Instrument
 from .models import Group, Invitation
-from .forms import GroupSetupForm
+from .forms import GroupSetupForm, InvitationForm
 
 # Create your views here.
 @login_required(login_url=reverse_lazy("login"))
@@ -78,6 +79,47 @@ def new_group(request, username=""):
     args = {"active": "dashboard", "form": form}
     args.update(csrf(request))
     return render(request, "groups/new.html", args)
+
+
+def invite_for_instrument(request, group_id, instr_name):
+    """
+    A view to invite a user to an existing group, to play a specific instrument
+    """
+    group = get_object_or_404(Group, pk=group_id)
+    instrument = get_object_or_404(Instrument, instrument=instr_name)
+    # if the current user is not a member of the group, we don't allow them to
+    # access the form.
+    # If the group does not desire the instrument requested, return to the group page
+    # with an explanatory error message.
+    try:
+        user_instrument = UserInstrument.objects.get(user=request.user,
+                                                     group__in=[group])
+        if instrument not in group.desired_instruments.all():
+            messages.error(request, "The %s group isn't looking for a %s player!" %(group.name,
+                                                                                    instrument.instrument))
+            return redirect(reverse("group", kwargs={"id": group_id}))
+
+    except UserInstrument.DoesNotExist:
+            raise PermissionDenied
+
+    if request.method == "POST":
+        form = InvitationForm(request.POST, instr=instr_name)
+        if form.is_valid():
+            invitation = form.save(commit=False)
+            invitation.inviting_user = request.user
+            invitation.save()
+            messages.success(request,
+                             "Your invitation was sent to %s" %request.POST.get("invited_user"))
+        else:
+            messages.error(request, "Please correct the indicated errors and try again")
+    else:
+        form = InvitationForm(initial={"group": group, "invited_instrument": instrument},
+                              instr=instr_name)
+    
+    args = {"active": "dashboard", "form": form, "group": group.name,
+            "instrument": instr_name}
+    args.update(csrf(request))
+    return render(request, "groups/specific-invite.html", args)
 
 
 def group_detail(request, id):

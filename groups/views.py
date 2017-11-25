@@ -107,6 +107,7 @@ def invite_for_instrument(request, group_id, instr_name):
         if form.is_valid():
             invitation = form.save(commit=False)
             invitation.inviting_user = request.user
+            invitation.invited_user = User.objects.get(username=request.POST.get("invited_user"))
             invitation.save()
             messages.success(request,
                              "Your invitation was sent to %s" %request.POST.get("invited_user"))

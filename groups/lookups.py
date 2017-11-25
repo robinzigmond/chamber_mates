@@ -18,21 +18,31 @@ class UserLookup(LookupChannel):
             return True
 
 
+# register a separate LookupChannel for each instrument. Required for the form
+# where users are only invited who play the pre-selected instrument.
+# I eventually found the right way to do this thanks to zondo's reply on the
+# following StackOverflow thread:
+# https://stackoverflow.com/questions/36159455/create-multiple-classes-from-list-of-strings
+instrument_lookups = {}
 for instr in Instrument.objects.all():
-    # register a separate LookupChannel for each instrument. Required for the form
-    # where users are only invited who play the pre-selected instrument.
-    @register("user_playing_"+instr.instrument)
-    class UserLookupWithInstrument(UserLookup):
-        model = User
+    # need to do the (manual) Python equivalent of a Javascript IIFE, to make sure that
+    # the get_query method uses the correct value of instr each time through the loop.
+    # (Otherwise all classes end up using whatever the last value in the loop is.)
+    def make_lookup_class(instr_obj):
+        @register("user_playing_"+instr_obj.instrument)
+        class UserLookupWithInstrument(UserLookup):
+            model = User
 
-        __name__ = str("UserLookupWith"+instr.instrument)
+            def get_query(self, q, request):
+                user_instrs = UserInstrument.objects.filter(instrument__instrument=instr_obj.instrument)
+                users_playing = self.model.objects.filter(userinstrument__pk__in=user_instrs)
+                return users_playing.filter(username__startswith=q)
+        
+        name = "UserLookupWith"+instr_obj.instrument
+        UserLookupWithInstrument.__name__ = str(name)
+        instrument_lookups[name] = UserLookupWithInstrument
 
-        def get_query(self, q, request):
-            user_instrs = UserInstrument.objects.filter(instrument__instrument=instr.instrument)
-            # print user_instrs
-            users_playing = self.model.objects.filter(userinstrument__pk__in=user_instrs)
-            # print users_playing
-            return users_playing.filter(username__startswith=q)
+    make_lookup_class(instr)
 
 
 @register("instrument")

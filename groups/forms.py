@@ -56,3 +56,12 @@ class InvitationForm(forms.ModelForm):
             return User.objects.get(username=data)
         except User.DoesNotExist:
             raise forms.ValidationError("Please enter an existing username")
+
+
+class DecideOnInvitation(forms.Form):
+    """
+    A "mini-form" for the user to accept or decline an invitation to join a group.
+    """
+    CHOICES = ((True, "accept"), (False, "decline"))
+    accept_or_decline = forms.ChoiceField(label="", widget=forms.RadioSelect,
+                                          choices=CHOICES)

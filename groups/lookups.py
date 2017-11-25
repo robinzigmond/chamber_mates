@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
-from accounts.models import UserInstrument, Instrument
 from ajax_select import register, LookupChannel
-
+from accounts.models import UserInstrument, Instrument
 
 @register("user_to_invite")
 class UserLookup(LookupChannel):

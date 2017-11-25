@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load bootstrap_tags %}
+
 {% block content %}
     <div class="container">
         <div class="row">
@@ -24,6 +26,13 @@
                                     {{ invite.invited_user.username }}
                                 </a>
                                 to play {{ invite.invited_instrument.instrument }}
+                                {% if invite.invited_user == user %}
+                                    <form role="form" method="post" action="">
+                                        {% csrf_token %}
+                                        {{ mini_form | as_bootstrap_inline }}
+                                        <button type="submit" class="btn btn-success btn-sm">Go!</button>
+                                    </form>
+                                {% endif %}
                             </li>                        
                         {% endfor %}
                     </ul>

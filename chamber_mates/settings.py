@@ -72,7 +72,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 "user_messages.context_processors.messages",
-                "accounts.context_processors.unknown_matches"
+                "accounts.context_processors.unknown_matches",
+                "groups.context_processors.new_invites"
             ],
         },
     },

@@ -71,7 +71,7 @@
         {% endif %}
         {% block content %}
         {% endblock %}
-        {% if user_messages or new_matches %}
+        {% if user_messages or new_matches or new_invites %}
             <div class="container-fluid" id="notifications">
                 {% if user_messages %}
                     <div class="row">
@@ -87,6 +87,13 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if new_invites %}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <a href="#">You have {{ new_invites | length }} new group invitation{{ new_invites | length | pluralize }}!</a>
+                    </div>
+                </div>
+            {% endif %}
             </div>
         {% endif %}
     </body>

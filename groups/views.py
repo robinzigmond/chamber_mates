@@ -11,7 +11,7 @@ from django.template.context_processors import csrf
 from django.db import IntegrityError
 from accounts.models import UserInstrument, Instrument
 from .models import Group, Invitation
-from .forms import GroupSetupForm, InvitationForm
+from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation
 
 # Create your views here.
 @login_required(login_url=reverse_lazy("login"))
@@ -81,6 +81,7 @@ def new_group(request, username=""):
     return render(request, "groups/new.html", args)
 
 
+@login_required(login_url=reverse_lazy("login"))
 def invite_for_instrument(request, group_id, instr_name):
     """
     A view to invite a user to an existing group, to play a specific instrument
@@ -124,6 +125,7 @@ def invite_for_instrument(request, group_id, instr_name):
     return render(request, "groups/specific-invite.html", args)
 
 
+@login_required(login_url=reverse_lazy("login"))
 def group_detail(request, id):
     """
     A view to display the details of a group. The template will show different features
@@ -140,6 +142,8 @@ def group_detail(request, id):
             break
     
     invites = Invitation.objects.filter(group=group)
+    mini_form = DecideOnInvitation()
     
-    return render(request, "groups/detail.html", {"group": group, "member": member,
-                                                  "invites": invites})
+    args = {"group": group, "member": member, "invites": invites, "mini_form": mini_form}
+    args.update(csrf(request))
+    return render(request, "groups/detail.html", args)

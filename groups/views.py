@@ -111,6 +111,7 @@ def invite_for_instrument(request, group_id, instr_name):
             invitation.save()
             messages.success(request,
                              "Your invitation was sent to %s" %request.POST.get("invited_user"))
+            return redirect(reverse("group", kwargs={"id": group_id}))
         else:
             messages.error(request, "Please correct the indicated errors and try again")
     else:

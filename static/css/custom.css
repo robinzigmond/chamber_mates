@@ -246,3 +246,8 @@ tr[id^="message-no-"] {
 .message-text p {
     white-space: pre-wrap;
 }
+
+label.chosen-instr {
+    color: white;
+    font-weight: bold;
+}

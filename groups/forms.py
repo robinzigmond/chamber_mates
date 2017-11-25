@@ -41,8 +41,8 @@ class InvitationForm(forms.ModelForm):
         self.fields["invited_instrument"].empty_label = None
         self.fields["invited_instrument"].widget.choices = self.fields["invited_instrument"].choices
         self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
-                                                         label="User to invite",
-                                                         help_text=None)
+                                                        label="User to invite",
+                                                        help_text=None)
 
     class Meta:
         model = Invitation

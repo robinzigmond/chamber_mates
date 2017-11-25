@@ -22,4 +22,12 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("input[name='invited_user']").focus();
+            $("input[type='radio'][checked]").parent().addClass("chosen-instr");
+        });
+    </script>
+
 {% endblock %}

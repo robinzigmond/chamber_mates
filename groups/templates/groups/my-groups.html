@@ -17,5 +17,20 @@
                 <button class="btn btn-success" onclick="location.href='{% url "new_group" %}'";>Start new group</button>
             </div>
         </div>
+        {% if invited %}
+            <div class="row">
+                <div class="col-xs-12">
+                    <h3>Groups you have been invited to join</h3>
+                    <ul>
+                        {% for group in invited %}
+                            <li>
+                                <a href="{% url 'group' id=group.pk %}">{{ group.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endif %}
+        <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
     </div>
 {% endblock %}

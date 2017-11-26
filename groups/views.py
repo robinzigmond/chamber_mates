@@ -23,7 +23,9 @@ def my_groups(request):
     groups = []
     for instr in instruments:
         groups.extend(Group.objects.filter(members__in=[instr]))
-    return render(request, "groups/my-groups.html", {"active": "dashboard", "groups": groups})
+    invited_groups = Group.objects.filter(invitation__invited_user__in=[request.user]).distinct()
+    return render(request, "groups/my-groups.html", {"active": "dashboard", "groups": groups,
+                                                     "invited": invited_groups})
 
 
 @login_required(login_url=reverse_lazy("login"))
@@ -36,7 +38,7 @@ def new_group(request, username=""):
         if form.is_valid():
             # create group and issue invitation (NB the group is created even if the user
             # declines the invitation - this is intentional)
-            group = Group(name=request.POST.get("name"))
+            group = Group(name=form.cleaned_data["name"])
             try:
                 group.save()
                 # It should be allowable for the "desired_instruments" field to be left blank
@@ -45,24 +47,25 @@ def new_group(request, username=""):
                 # left blank the value included in the POST request is None. To avoid this
                 # error, we manually set it to be the empty list.
                 if request.POST.get("desired_instruments"):
-                    group.desired_instruments = request.POST.get("desired_instruments")
+                    group.desired_instruments = form.cleaned_data["desired_instruments"]
                 else:
                     group.desired_instruments = []
 
-                my_instr = UserInstrument.objects.get(pk=request.POST.get("instrument"))
+                my_instr = UserInstrument.objects.get(pk=form.cleaned_data["instrument"])
                 group.members = [my_instr]
                 group.save()
                 
-                invited_user = User.objects.get(username=request.POST.get("invited_user"))
-                invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument"))
+                invited_user = User.objects.get(username=form.cleaned_data["invited_user"])
+                invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument")) \
+                                                                .instrument
                 Invitation.objects.create(inviting_user=request.user,
                                         invited_user=invited_user,
                                         invited_instrument=invited_instrument,
                                         group=group)
                 messages.success(request, """Your new group %s has now been started!
                                              An invitation has been sent to %s
-                                          """ % (request.POST.get("name"), 
-                                                 request.POST.get("invited_user")))
+                                          """ % (form.cleaned_data["name"], 
+                                                 form.cleaned_data["invited_user"]))
                 return redirect(reverse("my_groups"))
             
             except IntegrityError:
@@ -101,7 +104,7 @@ def invite_for_instrument(request, group_id, instr_name):
             return redirect(reverse("group", kwargs={"id": group_id}))
 
     except UserInstrument.DoesNotExist:
-            raise PermissionDenied
+        raise PermissionDenied
 
     if request.method == "POST":
         form = InvitationForm(request.POST, instr=instr_name)
@@ -134,16 +137,19 @@ def group_detail(request, id):
     group = get_object_or_404(Group, pk=id)
     
     # test for membership
-    my_instruments = UserInstrument.objects.filter(user=request.user)
     member = False
+    my_instruments = UserInstrument.objects.filter(user=request.user)
     for instr in my_instruments:
         if group in Group.objects.filter(members__in=[instr]):
             member = True
             break
     
     invites = Invitation.objects.filter(group=group)
+    my_invites = invites.filter(invited_user=request.user)
+    other_invites = invites.exclude(invited_user=request.user)
     mini_form = DecideOnInvitation()
     
-    args = {"group": group, "member": member, "invites": invites, "mini_form": mini_form}
+    args = {"active": "dashboard", "group": group, "member": member,
+            "my_invites": my_invites, "other_invites": other_invites,"mini_form": mini_form}
     args.update(csrf(request))
     return render(request, "groups/detail.html", args)

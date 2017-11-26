@@ -17,22 +17,28 @@
                         </li>
                     {% endfor %}
                 </ul>
-                {% if invites.all %}
+                {% if my_invites.all or other_invites.all %}
                     <h4>Users invited to join:</h4>
                     <ul>
-                        {% for invite in invites.all %}
+                        {% for invite in my_invites.all %}
                             <li>
                                 <a href="{% url 'user_profile' username=invite.invited_user.username %}">
                                     {{ invite.invited_user.username }}
                                 </a>
                                 to play {{ invite.invited_instrument.instrument }}
-                                {% if invite.invited_user == user %}
-                                    <form role="form" method="post" action="">
-                                        {% csrf_token %}
-                                        {{ mini_form | as_bootstrap_inline }}
-                                        <button type="submit" class="btn btn-success btn-sm">Go!</button>
-                                    </form>
-                                {% endif %}
+                                <form role="form" method="post" action="">
+                                    {% csrf_token %}
+                                    {{ mini_form | as_bootstrap_inline }}
+                                    <button type="submit" class="btn btn-success btn-sm">Go!</button>
+                                </form>
+                            </li>                        
+                        {% endfor %}
+                        {% for invite in other_invites.all %}
+                            <li>
+                                <a href="{% url 'user_profile' username=invite.invited_user.username %}">
+                                    {{ invite.invited_user.username }}
+                                </a>
+                                to play {{ invite.invited_instrument.instrument }}
                             </li>                        
                         {% endfor %}
                     </ul>
@@ -55,6 +61,7 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
+                <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">All my groups</button>
             </div>
         </div>
     </div>

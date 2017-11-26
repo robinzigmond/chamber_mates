@@ -90,7 +90,7 @@
                 {% if new_invites %}
                 <div class="row">
                     <div class="col-xs-12">
-                        <a href="#">You have {{ new_invites | length }} new group invitation{{ new_invites | length | pluralize }}!</a>
+                        <a href="{% url 'my_groups' %}">You have {{ new_invites | length }} new group invitation{{ new_invites | length | pluralize }}!</a>
                     </div>
                 </div>
             {% endif %}

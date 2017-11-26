@@ -29,6 +29,22 @@ class GroupSetupForm(forms.Form):
                                                        label="Other desired instruments",
                                                        required=False)
 
+
+class GroupUpdateForm(forms.Form):
+    """
+    Form to update the name and/or desired instruments of a group. Doesn't work well as a
+    ModelForm because the uniqueness constraint on the group's name causes errors to be
+    raised whenever the name is not changed. And implementing the form as a "plain" Form
+    is no harder.
+    """
+
+    name = forms.CharField(max_length=100, label="Group name")
+    desired_instruments=forms.ModelMultipleChoiceField(queryset=Instrument.objects.all(),
+                                                       widget=forms.CheckboxSelectMultiple(),
+                                                       label="Desired instruments",
+                                                       required=False)    
+
+
 class InvitationForm(forms.ModelForm):
     """
     A form for sending an invitation to a user to join an already-existing group

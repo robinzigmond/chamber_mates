@@ -11,7 +11,22 @@ from django.template.context_processors import csrf
 from django.db import IntegrityError
 from accounts.models import UserInstrument, Instrument
 from .models import Group, Invitation
-from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation
+from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation, GroupUpdateForm
+
+
+def is_member(user, group):
+    """
+    In a couple of view functions below, it is required to check whether a given user
+    is a member of a particular group. Since the group object defines its members field
+    via the UserInstrument model rather than the User model, this takes a number of lines
+    of code and so has been factored out to a separate function to avoid repetition.
+    """
+    instruments_played = UserInstrument.objects.filter(user=user)
+    for instr in instruments_played:
+        if group in Group.objects.filter(members__in=[instr]):
+            return True
+    return False
+
 
 # Create your views here.
 @login_required(login_url=reverse_lazy("login"))
@@ -144,7 +159,9 @@ def invite_for_instrument(request, group_id, instr_name):
 def group_detail(request, id):
     """
     A view to display the details of a group. The template will show different features
-    depending on if the current user is a member of that group or not
+    depending on if the current user is a member of that group or not.
+    It also can include a "mini-form" for users invited to that group to select if they
+    accept the invitation or not.
     """
     group = get_object_or_404(Group, pk=id)
     invites = Invitation.objects.filter(group=group)
@@ -179,15 +196,35 @@ def group_detail(request, id):
     else:
         mini_form = DecideOnInvitation()
 
-    # test for membership
-    member = False
-    my_instruments = UserInstrument.objects.filter(user=request.user)
-    for instr in my_instruments:
-        if group in Group.objects.filter(members__in=[instr]):
-            member = True
-            break
-    
-    args = {"active": "dashboard", "group": group, "member": member,
+    args = {"active": "dashboard", "group": group, "member": is_member(request.user, group),
             "my_invites": my_invites, "other_invites": other_invites,"mini_form": mini_form}
     args.update(csrf(request))
     return render(request, "groups/detail.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def update_group(request, id):
+    """
+    A view to handle the form for updating group information.
+    """
+    group = get_object_or_404(Group, pk=id)
+    if not is_member(request.user, group):
+        raise PermissionDenied
+   
+    if request.method == "POST":
+        form = GroupUpdateForm(request.POST)
+        if form.is_valid():
+            group.name = form.cleaned_data["name"]
+            group.desired_instruments = form.cleaned_data["desired_instruments"]
+            group.save()
+            messages.success(request, "The details for group %s have been updated!" %group.name)
+            return redirect(reverse("group", kwargs={"id": id}))
+        else:
+            messages.error(request, "Please correct the indicated errors and try again")
+    else:
+        form = GroupUpdateForm({"name": group.name,
+                                "desired_instruments": group.desired_instruments.all()})
+
+    args = {"active": "dashboard", "form": form,"group": group}
+    args.update(csrf(request))
+    return render(request, "groups/update.html", args)

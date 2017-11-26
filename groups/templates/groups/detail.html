@@ -61,7 +61,10 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">All my groups</button>
+                <div id="dashboard-buttons">
+                    <button class="btn btn-success" onclick="location.href='{% url "update" id=group.pk %}';">Edit group details</button>
+                    <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">All my groups</button>
+                </div>
             </div>
         </div>
     </div>

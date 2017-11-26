@@ -31,6 +31,8 @@
                 </div>
             </div>
         {% endif %}
-        <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+        <div id="dashboard-buttons">
+            <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+        </div>
     </div>
 {% endblock %}

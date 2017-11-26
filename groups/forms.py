@@ -62,6 +62,6 @@ class DecideOnInvitation(forms.Form):
     """
     A "mini-form" for the user to accept or decline an invitation to join a group.
     """
-    CHOICES = ((True, "accept"), (False, "decline"))
+    CHOICES = (("accept", "accept"), ("decline", "decline"))
     accept_or_decline = forms.ChoiceField(label="", widget=forms.RadioSelect,
                                           choices=CHOICES)

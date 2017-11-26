@@ -59,9 +59,9 @@ def new_group(request, username=""):
                 invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument")) \
                                                                 .instrument
                 Invitation.objects.create(inviting_user=request.user,
-                                        invited_user=invited_user,
-                                        invited_instrument=invited_instrument,
-                                        group=group)
+                                          invited_user=invited_user,
+                                          invited_instrument=invited_instrument,
+                                          group=group)
                 messages.success(request, """Your new group %s has now been started!
                                              An invitation has been sent to %s
                                           """ % (form.cleaned_data["name"], 
@@ -115,7 +115,7 @@ def invite_for_instrument(request, group_id, instr_name):
             # display an error message if you are trying to invite someone already in the group
             if group in Group.objects.filter(members__user__in=[invitation.invited_user]):
                 form.add_error("invited_user", "%s is already in this group!" \
-                              %request.POST.get("invited_user"))                
+                               %request.POST.get("invited_user"))                
             else:
                 try:
                     invitation.save()
@@ -134,7 +134,7 @@ def invite_for_instrument(request, group_id, instr_name):
         form = InvitationForm(initial={"group": group, "invited_instrument": instrument},
                               instr=instr_name)
     
-    args = {"active": "dashboard", "form": form, "group": group.name,
+    args = {"active": "dashboard", "form": form, "group": group,
             "instrument": instr_name}
     args.update(csrf(request))
     return render(request, "groups/specific-invite.html", args)
@@ -147,7 +147,38 @@ def group_detail(request, id):
     depending on if the current user is a member of that group or not
     """
     group = get_object_or_404(Group, pk=id)
-    
+    invites = Invitation.objects.filter(group=group)
+    my_invites = invites.filter(invited_user=request.user)
+    other_invites = invites.exclude(invited_user=request.user)
+
+    if request.method == "POST":
+        mini_form = DecideOnInvitation(request.POST)
+        if mini_form.is_valid():
+            invite_to_answer = my_invites[0]
+            invited_instr = UserInstrument.objects.get(user=request.user,
+                                                       instrument=invite_to_answer.invited_instrument)
+            # there will be only 1 invite now that the db enforces at most 1 invite per user
+            # per group
+            invite_to_answer.delete()
+            if mini_form.cleaned_data["accept_or_decline"] == "accept":
+                group.members.add(invited_instr)
+                messages.success(request,
+                                 "You are now a member of the group %s!" %group.name)
+                member = True
+            else:
+                messages.success(request,
+                                 "You have declined the invitation to join the group %s!" %group.name)
+                # add the instrument back on to the group's desired instrument list,
+                # if it isn't already there
+                if invited_instr not in group.desired_instruments.all():
+                    group.desired_instruments.add(invited_instr.instrument)
+
+                return redirect(reverse("my_groups"))
+        else:
+            messages.error(request, "Please correct the indicated errors and try again")
+    else:
+        mini_form = DecideOnInvitation()
+
     # test for membership
     member = False
     my_instruments = UserInstrument.objects.filter(user=request.user)
@@ -155,11 +186,6 @@ def group_detail(request, id):
         if group in Group.objects.filter(members__in=[instr]):
             member = True
             break
-    
-    invites = Invitation.objects.filter(group=group)
-    my_invites = invites.filter(invited_user=request.user)
-    other_invites = invites.exclude(invited_user=request.user)
-    mini_form = DecideOnInvitation()
     
     args = {"active": "dashboard", "group": group, "member": member,
             "my_invites": my_invites, "other_invites": other_invites,"mini_form": mini_form}

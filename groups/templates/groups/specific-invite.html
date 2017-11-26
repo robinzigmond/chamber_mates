@@ -11,7 +11,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h2>Find a {{ instrument }} player for group {{ group }}!</h2>
+                <h2>Find a {{ instrument }} player for group {{ group.name }}!</h2>
                 <form method="post" action="">
                     {% csrf_token %}
                     {{ form | as_bootstrap }}
@@ -19,6 +19,9 @@
                         <button type="submit" class="btn btn-success">Send invitation</button>
                     </div>                    
                 </form>
+                <button class="btn btn-default" onclick="location.href='{% url "group" id=group.pk %}';">
+                    Return to group
+                </button>
             </div>
         </div>
     </div>

@@ -29,5 +29,8 @@ class Invitation(models.Model):
     invited_instrument = models.ForeignKey(Instrument)
     group = models.ForeignKey(Group)
 
+    class Meta:
+        unique_together = (("invited_user", "group"),)
+
     def __unicode__(self):
         return "%s to play %s for %s" % (self.invited_user, self.invited_instrument, self.group)

@@ -112,10 +112,22 @@ def invite_for_instrument(request, group_id, instr_name):
             invitation = form.save(commit=False)
             invitation.inviting_user = request.user
             invitation.invited_user = User.objects.get(username=request.POST.get("invited_user"))
-            invitation.save()
-            messages.success(request,
-                             "Your invitation was sent to %s" %request.POST.get("invited_user"))
-            return redirect(reverse("group", kwargs={"id": group_id}))
+            # display an error message if you are trying to invite someone already in the group
+            if group in Group.objects.filter(members__user__in=[invitation.invited_user]):
+                form.add_error("invited_user", "%s is already in this group!" \
+                              %request.POST.get("invited_user"))                
+            else:
+                try:
+                    invitation.save()
+                    messages.success(request,
+                                    "Your invitation was sent to %s" %request.POST.get("invited_user"))
+                    return redirect(reverse("group", kwargs={"id": group_id}))
+                except IntegrityError:
+                    # This happens when the uniqueness constraint is violated - that is,
+                    # you try to invite someone who has already been invited to the same
+                    # group
+                    form.add_error("invited_user", "%s has already been invited to join this group!" \
+                                    %request.POST.get("invited_user"))
         else:
             messages.error(request, "Please correct the indicated errors and try again")
     else:

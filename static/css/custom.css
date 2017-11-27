@@ -259,3 +259,8 @@ label.chosen-instr {
 #div_id_accept_or_decline {
     display: inline-block;
 }
+
+.invite-button {
+    display: inline-block;
+    margin: 5px 0;
+}

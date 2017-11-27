@@ -53,7 +53,7 @@
                             <li>
                                 {{ desired.instrument }}
                                 {% if member %}
-                                    <button class="btn btn-sm btn-success" onclick="location.href='{% url "specific_invite" group_id=group.pk instr_name=desired.instrument %}';">
+                                    <button class="btn btn-sm btn-success invite-button" onclick="location.href='{% url "specific_invite" group_id=group.pk instr_name=desired.instrument %}';">
                                         Invite someone!
                                     </button>
                                 {% endif %}
@@ -62,7 +62,9 @@
                     </ul>
                 {% endif %}
                 <div id="dashboard-buttons">
-                    <button class="btn btn-success" onclick="location.href='{% url "update" id=group.pk %}';">Edit group details</button>
+                    {% if member %}
+                        <button class="btn btn-success" onclick="location.href='{% url "update" id=group.pk %}';">Edit group details</button>
+                    {% endif %}
                     <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">All my groups</button>
                 </div>
             </div>

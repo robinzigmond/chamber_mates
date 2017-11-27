@@ -19,6 +19,7 @@ from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument, Match, Standard
+from groups.models import Group
 
 MATCHES_DISPLAY_LIMIT = 2  # small for testing purposes, will probably be 5 in production
 
@@ -425,7 +426,10 @@ def profiles(request, username):
     
     if user == request.user:
         return redirect(reverse("dashboard"))
+    
+    details = get_profile_details(user)
+    groups = Group.objects.filter(members__in=details["instruments"].all())
 
-    args = {"active": "dashboard", "editable": False}
-    args.update(get_profile_details(user))
+    args = {"active": "dashboard", "editable": False, "groups": groups}
+    args.update(details)
     return render(request, "accounts/dashboard.html", args)

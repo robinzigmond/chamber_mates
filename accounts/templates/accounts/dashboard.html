@@ -11,6 +11,19 @@
                     {{ id.username }}
                     {% if editable %}!{% endif %}
                 </h2>
+                {% if not editable %}
+                    <p>Last login: {{ id.last_login }}</p>
+                {% endif %}
+            </div>
+            <div class="col-xs-12">
+                {% if groups %}
+                    <h4>Groups in which {{ id.username }} plays:</h4>
+                    <ul>
+                        {% for group in groups %}
+                            <li><a href="{% url 'group' id=group.pk %}">{{ group.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             </div>
             <div class="col-xs-12">
                 {% if editable %}

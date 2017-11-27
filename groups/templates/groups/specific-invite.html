@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load bootstrap_tags %}
+{% load anora %}
 
 {% block load_media %}
     <script type="text/javascript" src="{% static 'lib/jquery-migrate-3.0.1.min.js' %}"></script> 
@@ -11,8 +12,8 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h2>Find a {{ instrument }} player for group {{ group.name }}!</h2>
-                <form method="post" action="">
+                <h2>Find {{ instrument | anora }} player for group {{ group.name }}!</h2>
+                <form role="form" method="post" action="">
                     {% csrf_token %}
                     {{ form | as_bootstrap }}
                     <div class="form-group">

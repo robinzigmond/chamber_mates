@@ -51,6 +51,8 @@ class InvitationForm(forms.ModelForm):
     """
     def __init__(self, *args, **kwargs):
         instr = kwargs.pop("instr", None)
+        # allow possibility to exclude fields from form
+        exclude = kwargs.pop("exclude", None)
         super(InvitationForm, self).__init__(*args, **kwargs)
         self.fields["group"].empty_label = None
         self.fields["group"].widget.choices = self.fields["group"].choices
@@ -59,6 +61,8 @@ class InvitationForm(forms.ModelForm):
         self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
                                                         label="User to invite",
                                                         help_text=None)
+        for field_name in exclude:
+            del self.fields[field_name]
 
     class Meta:
         model = Invitation

@@ -38,12 +38,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "django.contrib.gis",
-    "home",
-    "accounts",
     "mapwidgets",
     "django_forms_bootstrap",
-    "user_messages",
     "ajax_select",
+    "anora",
+    "home",
+    "accounts",
+    "user_messages",
     "donations",
     "groups"
 ]

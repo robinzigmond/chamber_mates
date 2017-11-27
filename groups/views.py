@@ -122,10 +122,13 @@ def invite_for_instrument(request, group_id, instr_name):
         raise PermissionDenied
 
     if request.method == "POST":
-        form = InvitationForm(request.POST, instr=instr_name)
+        form = InvitationForm(request.POST, instr=instr_name,
+                              exclude=["group", "invited_instrument"])
         if form.is_valid():
             invitation = form.save(commit=False)
             invitation.inviting_user = request.user
+            invitation.group = Group.objects.get(pk=group_id)
+            invitation.invited_instrument = Instrument.objects.get(instrument=instr_name)
             invitation.invited_user = User.objects.get(username=request.POST.get("invited_user"))
             # display an error message if you are trying to invite someone already in the group
             if group in Group.objects.filter(members__user__in=[invitation.invited_user]):
@@ -146,8 +149,7 @@ def invite_for_instrument(request, group_id, instr_name):
         else:
             messages.error(request, "Please correct the indicated errors and try again")
     else:
-        form = InvitationForm(initial={"group": group, "invited_instrument": instrument},
-                              instr=instr_name)
+        form = InvitationForm(instr=instr_name, exclude=["group", "invited_instrument"])
     
     args = {"active": "dashboard", "form": form, "group": group,
             "instrument": instr_name}
@@ -197,7 +199,7 @@ def group_detail(request, id):
         mini_form = DecideOnInvitation()
 
     args = {"active": "dashboard", "group": group, "member": is_member(request.user, group),
-            "my_invites": my_invites, "other_invites": other_invites,"mini_form": mini_form}
+            "my_invites": my_invites, "other_invites": other_invites, "mini_form": mini_form}
     args.update(csrf(request))
     return render(request, "groups/detail.html", args)
 

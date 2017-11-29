@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from ajax_select.helpers import make_ajax_field
 from ajax_select.fields import AutoCompleteField
 from accounts.models import UserInstrument, Instrument
-from .models import Invitation
+from .models import Invitation, GroupMessage
 
 
 class GroupSetupForm(forms.Form):
@@ -54,10 +54,12 @@ class InvitationForm(forms.ModelForm):
         # allow possibility to exclude fields from form
         exclude = kwargs.pop("exclude", None)
         super(InvitationForm, self).__init__(*args, **kwargs)
+        # remove "-----" options from ForeignKey fields
         self.fields["group"].empty_label = None
         self.fields["group"].widget.choices = self.fields["group"].choices
         self.fields["invited_instrument"].empty_label = None
         self.fields["invited_instrument"].widget.choices = self.fields["invited_instrument"].choices
+        # need to add the invited_user field separately as an AutoCompleteField
         self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
                                                         label="User to invite",
                                                         help_text=None)
@@ -85,3 +87,22 @@ class DecideOnInvitation(forms.Form):
     CHOICES = (("accept", "accept"), ("decline", "decline"))
     accept_or_decline = forms.ChoiceField(label="", widget=forms.RadioSelect,
                                           choices=CHOICES)
+
+
+class GroupMessageForm(forms.ModelForm):
+    """
+    Form for posting a new message to a group's private forum. When used in practice, it
+    will either be invoked from a specific thread, in which case it adds the new message
+    to that thread - or it is invoked when starting a new thread.
+    """
+    def __init__(self, *args, **kwargs):
+        # if a "new_thread" kwarg is passed, the message is used to start a new thread,
+        # and therefore needs a "name" field
+        new = kwargs.pop("new_thread", None)
+        super(GroupMessageForm, self).__init__(*args, **kwargs)
+        if new:
+            self.fields["name"] = forms.CharField(max_length=200)
+    
+    class Meta:
+        model = GroupMessage
+        fields = ["message"]

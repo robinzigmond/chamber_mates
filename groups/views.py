@@ -9,9 +9,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.template.context_processors import csrf
 from django.db import IntegrityError
+from django.http import Http404
 from accounts.models import UserInstrument, Instrument
-from .models import Group, Invitation
-from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation, GroupUpdateForm
+from .models import Group, Invitation, GroupThread
+from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation, GroupUpdateForm, GroupMessageForm
 
 
 def is_member(user, group):
@@ -50,6 +51,7 @@ def new_group(request, username=""):
     """
     if request.method == "POST":
         form = GroupSetupForm(data=request.POST, user=request.user)
+        form.order_fields(["name", "instrument", "invited_user", "desired_instruments"])
         if form.is_valid():
             # create group and issue invitation (NB the group is created even if the user
             # declines the invitation - this is intentional)
@@ -93,6 +95,7 @@ def new_group(request, username=""):
             messages.error(request, "Please correct the indicated errors and try again")
     else:
         form = GroupSetupForm(user=request.user, initial={"invited_user": username})
+        form.order_fields(["name", "instrument", "invited_user", "desired_instruments"])
     
     args = {"active": "dashboard", "form": form}
     args.update(csrf(request))
@@ -169,6 +172,7 @@ def group_detail(request, id):
     invites = Invitation.objects.filter(group=group)
     my_invites = invites.filter(invited_user=request.user)
     other_invites = invites.exclude(invited_user=request.user)
+    threads = GroupThread.objects.filter(group=group).order_by("-last_post")
 
     if request.method == "POST":
         mini_form = DecideOnInvitation(request.POST)
@@ -199,7 +203,8 @@ def group_detail(request, id):
         mini_form = DecideOnInvitation()
 
     args = {"active": "dashboard", "group": group, "member": is_member(request.user, group),
-            "my_invites": my_invites, "other_invites": other_invites, "mini_form": mini_form}
+            "my_invites": my_invites, "other_invites": other_invites,
+            "threads": threads, "mini_form": mini_form}
     args.update(csrf(request))
     return render(request, "groups/detail.html", args)
 
@@ -230,3 +235,51 @@ def update_group(request, id):
     args = {"active": "dashboard", "form": form,"group": group}
     args.update(csrf(request))
     return render(request, "groups/update.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def new_thread(request, group_id):
+    """
+    A view to handle the form for starting a new thread on a group's forum/message-board
+    """
+    group = get_object_or_404(Group, pk=group_id)
+    if not is_member(request.user, group):
+        raise PermissionDenied
+    
+    if request.method == "POST":
+        form = GroupMessageForm(request.POST, new_thread=True)
+        form.order_fields(["name", "message"])
+        if form.is_valid():
+            new_thread = GroupThread.objects.create(group=group, name=form.cleaned_data["name"],
+                                       started_by=request.user)
+            message = form.save(commit=False)
+            message.thread = new_thread
+            message.author = request.user
+            message.save()
+            messages.success(request, "You have started the conversation thread %s" %new_thread.name)
+            return redirect(reverse("view_thread", kwargs={"group_id": group_id,
+                                                           "thread_id": new_thread.pk}))
+        else:
+            messages.error(request, "Please correct the indicated errors and try again")
+    else:
+        form = GroupMessageForm(new_thread=True)
+        form.order_fields(["name", "message"])
+    
+    args = {"active": "dashboard", "form": form, "group": group}
+    args.update(csrf(request))
+    return render(request, "groups/new_thread.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def view_thread(request, group_id, thread_id):
+    """
+    A view to display the messages in a given group thread
+    """
+    group = get_object_or_404(Group, pk=group_id)
+    if not is_member(request.user, group):
+        raise PermissionDenied
+    thread = get_object_or_404(GroupThread, pk=thread_id)
+    if thread.group != group:
+        raise Http404("That thread doesn't belong to this group!")
+    
+    return render(request, "groups/thread.html", {"thread": thread})

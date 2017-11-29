@@ -4,7 +4,7 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-xs-12">
+            <div class="col-xs-12 col-md-6">
                 <h2>{{ group.name }}</h2>
                 <h4>Members:</h4>
                 <ul>
@@ -61,12 +61,51 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                <div id="dashboard-buttons">
-                    {% if member %}
-                        <button class="btn btn-success" onclick="location.href='{% url "update" id=group.pk %}';">Edit group details</button>
+            </div>
+            {% if member %}
+                <div class="col-xs-12 col-md-6">
+                    <h3>Group conversations</h3>
+                    {% if threads %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <th>Topic</th>
+                                    <th>Started by</th>
+                                    <th>Last post</th>
+                                </thead>
+                                <tbody>
+                                    {% for thread in threads %}
+                                        <tr>
+                                            <td><a href="#">{{ thread.name }}</a></td>
+                                            <td><a href="{% url 'user_profile' username=thread.started_by.username %}">
+                                                {{ thread.started_by.username }}
+                                            </a></td>
+                                            <td>{{ thread.last_post }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <button class="btn btn-success" onclick="location.href='{% url "new_thread" group_id=group.pk %}';">
+                                New topic
+                            </button>
+                        </div>
+                    {% else %}
+                        <p>This group has no conversations yet!</p>
+                        <a href="{% url 'new_thread' group_id=group.pk %}">Why not start one?</a>
                     {% endif %}
-                    <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">All my groups</button>
                 </div>
+            {% endif %}
+        </div>
+        <div class="row">
+            <div id="dashboard-buttons">
+                {% if member %}
+                    <button class="btn btn-success" onclick="location.href='{% url "update" id=group.pk %}';">
+                        Edit group details
+                    </button>
+                {% endif %}
+                <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">
+                    All my groups
+                </button>
             </div>
         </div>
     </div>

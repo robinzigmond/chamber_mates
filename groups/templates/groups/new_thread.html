@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load bootstrap_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Start a new conversation in the group {{ group.name }}!</h2>
+                <form role="form" action="" method="post">
+                    {% csrf_token %}
+                    {{ form | as_bootstrap }}
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success">Start conversation!</button>
+                    </div>
+                </form>
+                <button class="btn btn-default" onclick="location.href='{% url "group" id=group.pk %}';">
+                    Back to group
+                </button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -124,10 +124,13 @@ def new_msg(request, to=None):
     """
     if to:
         user_to = get_object_or_404(User, username=to).username
+        focus_field = "title"
     else:
         user_to = None
+        focus_field = "user_to"
     if request.method == "POST":
         form = MessageForm(request.POST)
+        form.order_fields(["user_to", "title", "message"])
         if form.is_valid():
             message = form.save(commit=False)
             message.user_from = request.user
@@ -140,8 +143,9 @@ def new_msg(request, to=None):
 
     else:
         form = MessageForm(initial={"user_to": user_to})
+        form.order_fields(["user_to", "title", "message"])
 
-    args = {"active": "dashboard", "form": form, "reply": False}
+    args = {"active": "dashboard", "form": form, "focus_field": focus_field}
     args.update(csrf(request))
     return render(request, "user_messages/new_msg.html", args)
 
@@ -154,6 +158,7 @@ def reply(request, reply_to):
     if request.method == "POST":
         # form handling is EXACTLY as for any other new post:
         form = MessageForm(request.POST)
+        form.order_fields(["user_to", "title", "message"])
         if form.is_valid():
             message = form.save(commit=False)
             message.user_from = request.user
@@ -172,7 +177,8 @@ def reply(request, reply_to):
         form = MessageForm(initial={"user_to": msg.user_from.username,
                                     "title": "RE: "+msg.title,
                                     "message": "\n\n----------Replying to----------\n"+msg.message})
+        form.order_fields(["user_to", "title", "message"])
 
-    args = {"active": "dashboard", "form": form, "reply": True}
+    args = {"active": "dashboard", "form": form, "focus_field": "message"}
     args.update(csrf(request))
     return render(request, "user_messages/new_msg.html", args)

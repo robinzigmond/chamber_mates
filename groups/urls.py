@@ -7,6 +7,8 @@ urlpatterns = [
     url(r"^$", views.my_groups, name="my_groups"),
     url(r"^(?P<id>\d+)/$", views.group_detail, name="group"),
     url(r"^(?P<id>\d+)/update/$", views.update_group, name="update"),
+    url(r"^(?P<group_id>\d+)/thread/new/$", views.new_thread, name="new_thread"),
+    url(r"^(?P<group_id>\d+)/thread/(?P<thread_id>\d+)/$", views.view_thread, name="view_thread"),
     url(r"^new/$", views.new_group, name="new_group"),
     url(r"^invite/(?P<username>[\w@+-.]+)/$", views.new_group, name="invite"),
     url(r"^invite/(?P<group_id>\d+)/(?P<instr_name>[\w@+-.]+)$",

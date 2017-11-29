@@ -281,5 +281,24 @@ def view_thread(request, group_id, thread_id):
     thread = get_object_or_404(GroupThread, pk=thread_id)
     if thread.group != group:
         raise Http404("That thread doesn't belong to this group!")
+    thread_messages = thread.groupmessage_set.order_by("posted_date")
+
+    if request.method == "POST":
+        form = GroupMessageForm(request.POST, new_thread=False)
+        if form.is_valid():
+            new_message = form.save(commit=False)
+            new_message.thread = thread
+            new_message.author = request.user
+            new_message.save()
+            # no need to redirect, as want to view the new message as part of the thread
+            # but do want to empty the contents of the form!
+            form = GroupMessageForm(new_thread=False)
+        else:
+            messages.error(request, "Please correct the indicated errors and try again")
+    else:
+        form = GroupMessageForm(new_thread=False)
     
-    return render(request, "groups/thread.html", {"thread": thread})
+    args = {"active": "dashboard", "thread": thread,
+            "thread_messages": thread_messages, "form": form}
+    args.update(csrf(request))
+    return render(request, "groups/thread.html", args)

@@ -71,24 +71,28 @@
                                 <thead>
                                     <th>Topic</th>
                                     <th>Started by</th>
+                                    <th>Replies</th>
                                     <th>Last post</th>
                                 </thead>
                                 <tbody>
                                     {% for thread in threads %}
                                         <tr>
-                                            <td><a href="#">{{ thread.name }}</a></td>
+                                            <td><a href="{% url 'view_thread' group_id=group.pk thread_id=thread.pk %}">
+                                                {{ thread.name|truncatewords:4 }}
+                                            </a></td>
                                             <td><a href="{% url 'user_profile' username=thread.started_by.username %}">
                                                 {{ thread.started_by.username }}
                                             </a></td>
-                                            <td>{{ thread.last_post }}</td>
+                                            <td>{{ thread.groupmessage_set.count|add:"-1"}}</td>
+                                            <td><a href="{% url 'view_thread' group_id=group.pk thread_id=thread.pk %}#last-msg">{{ thread.last_post }}</a></td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
-                            <button class="btn btn-success" onclick="location.href='{% url "new_thread" group_id=group.pk %}';">
-                                New topic
-                            </button>
                         </div>
+                        <button class="btn btn-success" onclick="location.href='{% url "new_thread" group_id=group.pk %}';">
+                            New topic
+                        </button>
                     {% else %}
                         <p>This group has no conversations yet!</p>
                         <a href="{% url 'new_thread' group_id=group.pk %}">Why not start one?</a>

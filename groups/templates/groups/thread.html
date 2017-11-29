@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load bootstrap_tags %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>{{ thread.name }}</h2>
+                <p>Group: 
+                    <a href="{% url 'group' id=thread.group.pk %}">
+                        {{ thread.group.name }}
+                    </a>
+                </p>
+                {% for message in thread_messages %}
+                    <div class="message-text" {% if forloop.last %}id="last-msg"{% endif %}>
+                        <p class="thread-msg-header">Posted by <a href="{% url 'user_profile' username=message.author.username %}">{{ message.author }}</a> on {{ message.posted_date}}</p>
+                        <p class="thread-msg-text">{{ message.message }}</p>
+                    </div>
+                {% endfor %}
+                <button class="btn btn-success" id="new-post">New post</button>
+                <div id="new-post-form">
+                    <form role="form" action="" method="post">
+                        {% csrf_token %}
+                        {{ form | as_bootstrap }}
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-success">Post</button>
+                        </div>
+                    </form>
+                </div>
+                <button class="btn btn-default" onclick="location.href='{% url "group" id=thread.group.pk %}';">
+                    Back to group
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#new-post").click(function() {
+                $("#new-post-form").slideDown(200, function() {
+                    $("html, body").animate({scrollTop: $("#new-post-form").offset().top},
+                                             700, "swing", function() {
+                        $("#id_message").focus();
+                    });
+                });
+            });
+        });
+    </script>
+
+{% endblock %}

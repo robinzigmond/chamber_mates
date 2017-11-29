@@ -251,11 +251,6 @@ tr[id^="message-no-"] {
     white-space: pre-wrap;
 }
 
-label.chosen-instr {
-    color: white;
-    font-weight: bold;
-}
-
 #div_id_accept_or_decline {
     display: inline-block;
 }
@@ -263,4 +258,22 @@ label.chosen-instr {
 .invite-button {
     display: inline-block;
     margin: 5px 0;
+}
+
+.thread-message {
+    margin-bottom: 10px;
+}
+
+.message-text p.thread-msg-header {
+    border-bottom: 1px dotted white;
+    color: #cacaca;
+}
+
+#new-post {
+    display: block;
+    margin: 10px 0;
+}
+
+#new-post-form {
+    display: none;
 }

@@ -11,7 +11,7 @@ from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.http import Http404
 from accounts.models import UserInstrument, Instrument
-from .models import Group, Invitation, GroupThread
+from .models import Group, Invitation, GroupThread, GroupMessage
 from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation, GroupUpdateForm, GroupMessageForm
 
 
@@ -302,3 +302,37 @@ def view_thread(request, group_id, thread_id):
             "thread_messages": thread_messages, "form": form}
     args.update(csrf(request))
     return render(request, "groups/thread.html", args)
+
+
+@login_required(login_url=reverse_lazy("login"))
+def delete(request, group_id, thread_id, msg_id):
+    """
+    A view to delete a message from a group forum thread. Access only allowed if the
+    message is the user's own!
+    """
+
+    # get the necessary "admin" out of the way first!
+    # This is unnecessary for normal use of the site, but prevents anything untoward happening
+    # if users play around with the urls manually.
+    group = get_object_or_404(Group, pk=group_id)
+    if not is_member(request.user, group):
+        raise PermissionDenied
+    thread = get_object_or_404(GroupThread, pk=thread_id)
+    if thread.group != group:
+        raise Http404("That thread doesn't belong to this group!")
+    msg = get_object_or_404(GroupMessage, pk=msg_id)
+    if msg.thread != thread:
+        raise Http404("That message isn't from the thread requested!")
+    if msg.author != request.user:
+        raise PermissionDenied
+    
+    # if everything checks out, then we can just delete the object and redirect the user
+    msg.delete()
+    messages.success(request, "Your message was deleted!")
+
+    # if it's the last message in the thread, then delete the thread too
+    if thread.groupmessage_set.count() == 0:
+        thread.delete()
+        return redirect(reverse("group", kwargs={"id": group_id}))
+    else:
+        return redirect(reverse("view_thread", kwargs={"group_id": group_id, "thread_id": thread_id}))

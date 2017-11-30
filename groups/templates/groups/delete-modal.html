@@ -1,0 +1,12 @@
+<!-- Modal for confirmation of deleting messages -->
+<div class="modal fade" id="delete-modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this message?</strong></p>
+                <a class="btn btn-danger" href="{% url 'delete_from_thread' group_id='1' thread_id='1' msg_id='1' %}">Delete</a>
+                <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

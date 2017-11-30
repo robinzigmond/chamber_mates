@@ -264,9 +264,17 @@ tr[id^="message-no-"] {
     margin-bottom: 10px;
 }
 
+.message-text {
+    overflow: hidden;
+}
+
 .message-text p.thread-msg-header {
     border-bottom: 1px dotted white;
     color: #cacaca;
+}
+
+.message-text button[id^="delete-post-"] {
+    float: right;
 }
 
 #new-post {

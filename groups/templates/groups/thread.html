@@ -15,6 +15,11 @@
                     <div class="message-text" {% if forloop.last %}id="last-msg"{% endif %}>
                         <p class="thread-msg-header">Posted by <a href="{% url 'user_profile' username=message.author.username %}">{{ message.author }}</a> on {{ message.posted_date}}</p>
                         <p class="thread-msg-text">{{ message.message }}</p>
+                        {% if message.author == request.user %}
+                            <button class="btn btn-danger btn-sm delete" id="delete-post-{{ message.pk }}" data-toggle="modal" data-target="#delete-modal">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true" aria-label="delete selected"></span>
+                            </button>
+                        {% endif %}
                     </div>
                 {% endfor %}
                 <button class="btn btn-success" id="new-post">New post</button>
@@ -34,8 +39,12 @@
         </div>
     </div>
 
+    {% include "groups/delete-modal.html" %}
+
     <script type="text/javascript">
         $(function() {
+            // make "new post" form show up nicely - including scrolling the screen downwards -
+            // when the corresponding button is clicked
             $("#new-post").click(function() {
                 $("#new-post-form").slideDown(200, function() {
                     $("html, body").animate({scrollTop: $("#new-post-form").offset().top},
@@ -43,6 +52,16 @@
                         $("#id_message").focus();
                     });
                 });
+            });
+
+            // implement message deletion by updating the delete urls appropriately when
+            // one of the delete buttons is clicked
+            $(".delete").click(function() {
+                var pk=$(this).attr("id").slice(12);  // slice off "delete-post-" from id to give just the number
+                var djangoUrl = $(".modal-body a").attr("href");
+                var newUrl = djangoUrl.replace(/(\d+)\/thread\/(\d+)\/delete\/(\d+)\/$/,
+                                               {{ thread.group.pk }}+"/thread/"+{{ thread.pk }}+"/delete/"+pk+"/");
+                $(".modal-body a").attr("href", newUrl);
             });
         });
     </script>

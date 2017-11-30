@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.template.context_processors import csrf
 from django.db import IntegrityError
 from django.http import Http404
+from django.utils import timezone
 from accounts.models import UserInstrument, Instrument
 from .models import Group, Invitation, GroupThread, GroupMessage
 from .forms import GroupSetupForm, InvitationForm, DecideOnInvitation, GroupUpdateForm, GroupMessageForm
@@ -290,6 +291,9 @@ def view_thread(request, group_id, thread_id):
             new_message.thread = thread
             new_message.author = request.user
             new_message.save()
+            # update "last post" property of thread!
+            thread.last_post = timezone.now()
+            thread.save()
             # no need to redirect, as want to view the new message as part of the thread
             # but do want to empty the contents of the form!
             form = GroupMessageForm(new_thread=False)

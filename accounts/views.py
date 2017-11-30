@@ -429,7 +429,8 @@ def profiles(request, username):
     
     details = get_profile_details(user)
     groups = Group.objects.filter(members__in=details["instruments"].all())
+    dist = distance(request.user.profile.location, user.profile.location).miles
 
-    args = {"active": "dashboard", "editable": False, "groups": groups}
+    args = {"active": "dashboard", "editable": False, "groups": groups, "distance": dist}
     args.update(details)
     return render(request, "accounts/dashboard.html", args)

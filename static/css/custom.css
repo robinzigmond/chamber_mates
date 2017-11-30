@@ -260,6 +260,18 @@ tr[id^="message-no-"] {
     margin: 5px 0;
 }
 
+tr[id^="thread-no-"] {
+    display: none;
+}
+
+#thread-page-info {
+    margin-bottom: 2px;
+}
+
+#new-post-btn {
+    float: right;
+}
+
 .thread-message {
     margin-bottom: 10px;
 }

@@ -423,14 +423,27 @@ def profiles(request, username):
     A view to allow a specific user's public profile to be seen
     """
     user = get_object_or_404(User, username=username)
+    details = get_profile_details(user)
     
     if user == request.user:
         return redirect(reverse("dashboard"))
     
-    details = get_profile_details(user)
-    groups = Group.objects.filter(members__in=details["instruments"].all())
+    their_instruments = details["instruments"].all()
+    groups = Group.objects.filter(members__in=their_instruments)
+    # get all groups that the user can be invited to. These are those that
+    # meet the following 3 conditions:
+    # 1. the requesting user is a member of them
+    # 2. the user whose profile is being viewed plays an instrument which
+    # is desired by the group
+    # 3. the above user is not already a member!
+    my_instruments = get_profile_details(request.user)["instruments"].all()
+    
+    groups_to_invite = Group.objects.filter(members__in=my_instruments,
+                                            desired_instruments__user_plays__in=their_instruments) \
+                                    .exclude(members__in=their_instruments).distinct()
     dist = distance(request.user.profile.location, user.profile.location).miles
 
-    args = {"active": "dashboard", "editable": False, "groups": groups, "distance": dist}
+    args = {"active": "dashboard", "editable": False, "groups": groups,
+            "groups_to_invite": groups_to_invite, "distance": dist}
     args.update(details)
     return render(request, "accounts/dashboard.html", args)

@@ -4,10 +4,12 @@
 
 {% block content %}
     <div class="container">
+        <div id="group-header">
+            <h2>{{ group.name }}</h2>
+        </div>
         <div class="row">
             <div class="col-xs-12 col-sm-6">
-                <h2>{{ group.name }}</h2>
-                <h4>Members:</h4>
+                <h3>Members:</h3>
                 <ul>
                     {% for instr in group.members.all %}
                         <li>

@@ -130,6 +130,16 @@ a {
     margin: 10px;
 }
 
+#group-invite-wrapper {
+    display: inline-block;
+}
+
+#group-select-picker {
+    display: inline-block;
+    width: 125px;
+    margin: 10px;
+}
+
 .form-group .radio, .form-group .checkbox {
     display: inline-block;
     margin: 0 20px;
@@ -249,6 +259,21 @@ tr[id^="message-no-"] {
 
 .message-text p {
     white-space: pre-wrap;
+}
+
+#group-header {
+    text-align: center;
+    margin: 0 auto;
+    max-width: 500px;
+    text-decoration: underline;
+    color: black;
+    background-color: #737373;
+    border-radius: 5px;
+    border: 2px solid white;
+}
+
+#group-header h2 {
+    font-size: 40px;
 }
 
 #div_id_accept_or_decline {

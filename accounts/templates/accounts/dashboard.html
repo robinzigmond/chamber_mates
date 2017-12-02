@@ -57,9 +57,9 @@
                     <button class="btn btn-success" onclick="location.href='{% url "my_groups" %}';">My groups</button>
                 {% else %}
                     <button class="btn btn-success" onclick="location.href='{% url "new_msg_to" to=id.username %}';">Send message</button>
-                    <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+                    <button class="btn btn-success" onclick="invite()">Dashboard</button>
                     <div id="group-invite-wrapper">
-                        <button class="btn btn-success" onclick="location.href='{% url "invite" username=id.username %}';">Invite to group:</button>
+                        <button class="btn btn-success" onclick="invite();">Invite to group:</button>
                         <div class="form-group" id="group-select-picker">
                             <select name="group_to_invite" id="group_to_invite" class="form-control">
                                 <option value="0">New group</option>
@@ -73,4 +73,33 @@
             </div>
         </div>
     </div>
+
+    {% if not editable %}
+        <script type="text/javascript">
+            var href="{% url 'auto_invite' user_id=id.pk group_id=1 %}";
+
+            function invite() {
+                location.href = href;
+            }
+
+            $(function() {
+                $("#group_to_invite").change(function() {
+                    var val = $(this).val();
+                    console.log(val);
+                    if (val == 0) {
+                        href = "{% url 'invite' username=id.username %}";
+                        console.log(href);
+                    }
+                    else {
+                        href="{% url 'auto_invite' user_id=id.pk group_id=1 %}";
+                        href = href.replace(/(\d+)\/user\/(\d+)\//, function(match, p1, p2) {
+                            return match.replace(p1, val);
+                        });
+                        console.log(href);
+                    }
+                });
+            });
+        </script>
+    {% endif %}
+
 {% endblock %}

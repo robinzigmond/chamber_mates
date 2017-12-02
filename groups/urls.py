@@ -13,6 +13,10 @@ urlpatterns = [
         views.delete, name="delete_from_thread"),
     url(r"^new/$", views.new_group, name="new_group"),
     url(r"^invite/(?P<username>[\w@+-.]+)/$", views.new_group, name="invite"),
-    url(r"^invite/(?P<group_id>\d+)/(?P<instr_name>[\w@+-.]+)$",
-        views.invite_for_instrument, name="specific_invite")
+    url(r"^invite/(?P<group_id>\d+)/instrument/(?P<instr_name>[\w@+-.]+)/$",
+        views.specific_invite, name="invite_for_instrument"),
+    url(r"^invite/(?P<group_id>\d+)/user/(?P<user_id>\d+)/$",
+        views.specific_invite, name="invite_for_user"),
+    url(r"^invite/auto/(?P<group_id>\d+)/user/(?P<user_id>\d+)/$",
+        views.add_invitation, name="auto_invite")
 ]

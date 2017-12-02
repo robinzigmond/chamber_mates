@@ -19,7 +19,7 @@ from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
 from .models import Profile, UserInstrument, Instrument, Match, Standard
-from groups.models import Group
+from groups.models import Group, Invitation
 
 MATCHES_DISPLAY_LIMIT = 2  # small for testing purposes, will probably be 5 in production
 
@@ -431,16 +431,19 @@ def profiles(request, username):
     their_instruments = details["instruments"].all()
     groups = Group.objects.filter(members__in=their_instruments)
     # get all groups that the user can be invited to. These are those that
-    # meet the following 3 conditions:
+    # meet the following conditions:
     # 1. the requesting user is a member of them
     # 2. the user whose profile is being viewed plays an instrument which
     # is desired by the group
     # 3. the above user is not already a member!
+    # 4. they have not been invited yet either
     my_instruments = get_profile_details(request.user)["instruments"].all()
+    their_invites = Invitation.objects.filter(invited_user=user)
     
     groups_to_invite = Group.objects.filter(members__in=my_instruments,
                                             desired_instruments__user_plays__in=their_instruments) \
-                                    .exclude(members__in=their_instruments).distinct()
+                                    .exclude(members__in=their_instruments) \
+                                    .exclude(invitation__in=their_invites).distinct()
     dist = distance(request.user.profile.location, user.profile.location).miles
 
     args = {"active": "dashboard", "editable": False, "groups": groups,

@@ -60,11 +60,18 @@ class InvitationForm(forms.ModelForm):
         self.fields["invited_instrument"].empty_label = None
         self.fields["invited_instrument"].widget.choices = self.fields["invited_instrument"].choices
         # need to add the invited_user field separately as an AutoCompleteField
-        self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
-                                                        label="User to invite",
-                                                        help_text=None)
+        if instr:
+            self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
+                                                            label="User to invite",
+                                                            help_text=None)
+            self.fields["invited_user"]
         for field_name in exclude:
-            del self.fields[field_name]
+            try:
+                del self.fields[field_name]
+            except KeyError:
+                # can't delete the invited_user field if it wasn't created -
+                # but can just ignore this error
+                pass
 
     class Meta:
         model = Invitation

@@ -56,7 +56,7 @@
                             <li>
                                 {{ desired.instrument }}
                                 {% if member %}
-                                    <button class="btn btn-sm btn-success invite-button" onclick="location.href='{% url "specific_invite" group_id=group.pk instr_name=desired.instrument %}';">
+                                    <button class="btn btn-sm btn-success invite-button" onclick="location.href='{% url "invite_for_instrument" group_id=group.pk instr_name=desired.instrument %}';">
                                         Invite someone!
                                     </button>
                                 {% endif %}

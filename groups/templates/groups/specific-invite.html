@@ -12,7 +12,13 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h2>Find {{ instrument | anora }} player for group {{ group.name }}!</h2>
+                <h2>
+                    {% if instrument %}
+                        Find {{ instrument | anora }} player for group {{ group.name }}!
+                    {% elif user %}
+                        Invite {{ user.username }} to group {{ group.name }}!
+                    {% endif %}
+                </h2>
                 <form role="form" method="post" action="">
                     {% csrf_token %}
                     {{ form | as_bootstrap }}

@@ -58,33 +58,37 @@ def new_group(request, username=""):
             # declines the invitation - this is intentional)
             group = Group(name=form.cleaned_data["name"])
             try:
-                group.save()
-                # It should be allowable for the "desired_instruments" field to be left blank
-                # - to allow for groups of just 2 users. Django internally requires the
-                # ManyToManyField to be an iterable - otherwise an error is raised - but if
-                # left blank the value included in the POST request is None. To avoid this
-                # error, we manually set it to be the empty list.
-                if request.POST.get("desired_instruments"):
-                    group.desired_instruments = form.cleaned_data["desired_instruments"]
-                else:
-                    group.desired_instruments = []
-
-                my_instr = UserInstrument.objects.get(pk=form.cleaned_data["instrument"])
-                group.members = [my_instr]
-                group.save()
-                
                 invited_user = User.objects.get(username=form.cleaned_data["invited_user"])
-                invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument")) \
-                                                                .instrument
-                Invitation.objects.create(inviting_user=request.user,
-                                          invited_user=invited_user,
-                                          invited_instrument=invited_instrument,
-                                          group=group)
-                messages.success(request, """Your new group %s has now been started!
-                                             An invitation has been sent to %s
-                                          """ % (form.cleaned_data["name"], 
-                                                 form.cleaned_data["invited_user"]))
-                return redirect(reverse("my_groups"))
+                if invited_user == request.user:
+                    form.add_error("name", "You can't invite yourself!")
+                else:
+                    group.save()
+                    # It should be allowable for the "desired_instruments" field to be left blank
+                    # - to allow for groups of just 2 users. Django internally requires the
+                    # ManyToManyField to be an iterable - otherwise an error is raised - but if
+                    # left blank the value included in the POST request is None. To avoid this
+                    # error, we manually set it to be the empty list.
+                    if request.POST.get("desired_instruments"):
+                        group.desired_instruments = form.cleaned_data["desired_instruments"]
+                    else:
+                        group.desired_instruments = []
+
+                    my_instr = UserInstrument.objects.get(pk=form.cleaned_data["instrument"])
+                    group.members = [my_instr]
+                    group.save()
+                
+
+                    invited_instrument = UserInstrument.objects.get(pk=request.POST.get("invited_instrument")) \
+                                                                    .instrument
+                    Invitation.objects.create(inviting_user=request.user,
+                                              invited_user=invited_user,
+                                              invited_instrument=invited_instrument,
+                                              group=group)
+                    messages.success(request, """Your new group %s has now been started!
+                                                An invitation has been sent to %s
+                                            """ % (form.cleaned_data["name"], 
+                                                    form.cleaned_data["invited_user"]))
+                    return redirect(reverse("my_groups"))
             
             except IntegrityError:
                 # this happens if the user attempts to create a group with an already existing name

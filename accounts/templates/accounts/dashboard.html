@@ -11,6 +11,12 @@
                     {{ id.username }}
                     {% if editable %}!{% endif %}
                 </h2>
+                {% if editable %}
+                    <h3>Your public details:</h3>
+                {% endif %}
+                <div id="user-description"> 
+                    <p>"{{ profile.description }}"</p>
+                </div>
                 {% if not editable %}
                     <p>Last login: {{ id.last_login }}</p>
                 {% endif %}
@@ -28,9 +34,6 @@
                 {% endif %}
             </div>
             <div class="col-xs-12">
-                {% if editable %}
-                    <h3>Your public details:</h3>
-                {% endif %}
                 {% for instrument in instruments.all %}
                     <div class="instrument-description">
                         <p><strong>{{ instrument.instrument | capfirst }}</strong> player seeking players of the following instruments:</p>

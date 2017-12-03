@@ -21,6 +21,8 @@ class Profile(models.Model):
     """
     This model will contain all of a user's key information, apart from what is required for
     authentication (username, password and email). The fields are:
+    - description (a text field the user can fill in giving personal or other information, tp
+    describe to other users what they are looking for)
     - location
     - max_distance: An integer denoting the maximum distance (in miles) from their location
     that a user wishes to go to make contact with another user. Uses one of the values in
@@ -28,6 +30,7 @@ class Profile(models.Model):
     We also of course use a OneToOneField to link it to a specific user!
     """
     user = models.OneToOneField(User)
+    description = models.CharField(max_length=500, null=True, blank=True)
     location = models.PointField()
     max_distance = models.ForeignKey(Distance)
 

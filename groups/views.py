@@ -56,7 +56,8 @@ def new_group(request, username=""):
         if form.is_valid():
             # create group and issue invitation (NB the group is created even if the user
             # declines the invitation - this is intentional)
-            group = Group(name=form.cleaned_data["name"])
+            group = Group(name=form.cleaned_data["name"],
+                          description=form.cleaned_data["description"])
             try:
                 invited_user = User.objects.get(username=form.cleaned_data["invited_user"])
                 if invited_user == request.user:
@@ -110,7 +111,8 @@ def new_group(request, username=""):
 @login_required(login_url=reverse_lazy("login"))
 def specific_invite(request, group_id, instr_name=None, user_id=None):
     """
-    A view to invite a user to an existing group, to play a specific instrument
+    A view to either invite a user to an existing group, to play a specific instrument,
+    or choose an instrument for a specific user to play in the group
     """
     group = get_object_or_404(Group, pk=group_id)
     if not is_member(request.user, group):
@@ -250,6 +252,7 @@ def update_group(request, id):
         form = GroupUpdateForm(request.POST)
         if form.is_valid():
             group.name = form.cleaned_data["name"]
+            group.description = form.cleaned_data["description"]
             group.desired_instruments = form.cleaned_data["desired_instruments"]
             group.save()
             messages.success(request, "The details for group %s have been updated!" %group.name)
@@ -257,7 +260,7 @@ def update_group(request, id):
         else:
             messages.error(request, "Please correct the indicated errors and try again")
     else:
-        form = GroupUpdateForm({"name": group.name,
+        form = GroupUpdateForm({"name": group.name, "description": group.description,
                                 "desired_instruments": group.desired_instruments.all()})
 
     args = {"active": "dashboard", "form": form,"group": group}

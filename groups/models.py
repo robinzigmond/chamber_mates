@@ -13,6 +13,7 @@ class Group(models.Model):
     and make music together
     """
     name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=500, null=True, blank=True)
     members = models.ManyToManyField(UserInstrument)
     desired_instruments = models.ManyToManyField(Instrument)
 

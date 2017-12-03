@@ -116,6 +116,20 @@ a {
     margin: 10px;
 }
 
+#user-description {
+    margin: 15px 0;
+    text-align: center;
+    color: black;
+    background-color: #737373;
+    border-radius: 5px;
+    border: 2px solid white;
+}
+
+#user-description p {
+    font-size: 20px;
+    font-style: italic;
+}
+
 .instrument-description {
     border: 1px solid black;
     background-color: #737373;
@@ -273,7 +287,6 @@ tr[id^="message-no-"] {
     text-align: center;
     margin: 0 auto;
     max-width: 500px;
-    text-decoration: underline;
     color: black;
     background-color: #737373;
     border-radius: 5px;
@@ -282,6 +295,12 @@ tr[id^="message-no-"] {
 
 #group-header h2 {
     font-size: 40px;
+    text-decoration: underline;
+}
+
+#group-header p {
+    font-style: italic;
+    font-size: 16px;
 }
 
 #div_id_accept_or_decline {

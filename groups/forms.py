@@ -21,6 +21,7 @@ class GroupSetupForm(forms.Form):
                                                       label="Instrument you will play")
 
     name = forms.CharField(max_length=100, label="Group name")
+    description = forms.CharField(max_length=500, label="Description of your group", required=False)
     invited_user = make_ajax_field(User, "username", "user_to_invite",
                                    label="Invite another user",
                                    help_text="")
@@ -39,6 +40,7 @@ class GroupUpdateForm(forms.Form):
     """
 
     name = forms.CharField(max_length=100, label="Group name")
+    description = forms.CharField(max_length=500, label="Description of your group", required=False)
     desired_instruments=forms.ModelMultipleChoiceField(queryset=Instrument.objects.all(),
                                                        widget=forms.CheckboxSelectMultiple(),
                                                        label="Desired instruments",

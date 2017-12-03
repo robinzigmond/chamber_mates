@@ -64,10 +64,12 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = Profile
-        fields = ["location", "max_distance"]
-        widgets = {"location": GooglePointFieldWidget,
+        fields = ["description", "location", "max_distance"]
+        widgets = {"description": forms.Textarea,
+                   "location": GooglePointFieldWidget,
                    "max_distance": forms.RadioSelect}
-        labels = {"location": "Your location",
+        labels = {"description": "Tell other users a little about yourself",
+                  "location": "Your location",
                   "max_distance": "Find players within this distance (miles)"}
 
 

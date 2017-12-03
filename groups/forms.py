@@ -64,7 +64,6 @@ class InvitationForm(forms.ModelForm):
             self.fields["invited_user"] = AutoCompleteField("user_playing_"+instr,
                                                             label="User to invite",
                                                             help_text=None)
-            self.fields["invited_user"]
         for field_name in exclude:
             try:
                 del self.fields[field_name]

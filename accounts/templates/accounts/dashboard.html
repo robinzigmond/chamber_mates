@@ -76,7 +76,7 @@
 
     {% if not editable %}
         <script type="text/javascript">
-            var href="{% url 'auto_invite' user_id=id.pk group_id=1 %}";
+            var href = "{% url 'invite' username=id.username %}";
 
             function invite() {
                 location.href = href;
@@ -85,17 +85,14 @@
             $(function() {
                 $("#group_to_invite").change(function() {
                     var val = $(this).val();
-                    console.log(val);
                     if (val == 0) {
                         href = "{% url 'invite' username=id.username %}";
-                        console.log(href);
                     }
                     else {
-                        href="{% url 'auto_invite' user_id=id.pk group_id=1 %}";
+                        href = "{% url 'auto_invite' user_id=id.pk group_id=1 %}";
                         href = href.replace(/(\d+)\/user\/(\d+)\//, function(match, p1, p2) {
                             return match.replace(p1, val);
                         });
-                        console.log(href);
                     }
                 });
             });

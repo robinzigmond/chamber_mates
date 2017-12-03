@@ -118,15 +118,14 @@ def specific_invite(request, group_id, instr_name=None, user_id=None):
 
     if instr_name:
         instrument = get_object_or_404(Instrument, instrument=instr_name)
-        # If the group does not desire the instrument requested, return to the group page
-        # with an explanatory error message.
-        if instrument not in group.desired_instruments.all():
-            messages.error(request, "The %s group isn't looking for a %s player!" %(group.name,
-                                                                                    instrument.instrument))
-        return redirect(reverse("group", kwargs={"id": group_id}))
+
+    else:
+        instrument = None
 
     if user_id:
         user = get_object_or_404(User, pk=user_id)
+    else:
+        user = None
 
     # determine fields to exclude from form, depending on the circumstances this view is called:
     exclusions = ["group"]
@@ -140,15 +139,22 @@ def specific_invite(request, group_id, instr_name=None, user_id=None):
         if form.is_valid():
             invitation = form.save(commit=False)
             invitation.inviting_user = request.user
-            invitation.group = Group.objects.get(pk=group_id)
+            invitation.group = group
             if instrument:
                 invitation.invited_instrument = instrument
             else:
-                invitation.invited_instrument = Instrument.objects.get(instrument=instr_name)
+                invitation.invited_instrument = form.cleaned_data["invited_instrument"]
+            # If the group does not desire the instrument requested, return to the group page
+            # with an explanatory error message.
+            if instrument and instrument not in group.desired_instruments.all():
+                messages.error(request, "The %s group isn't looking for a %s player!" %(group.name,
+                                                                                        instrument.instrument))
+                return redirect(reverse("group", kwargs={"id": group_id}))
+
             if user:
                 invitation.invited_user = user
             else:
-                invitation.invited_user = User.objects.get(username=request.POST.get("invited_user"))
+                invitation.invited_user = form.cleaned_data["invited_user"]
             # display an error message if you are trying to invite someone already in the group
             if group in Group.objects.filter(members__user__in=[invitation.invited_user]):
                 form.add_error("invited_user", "%s is already in this group!" \
@@ -168,8 +174,15 @@ def specific_invite(request, group_id, instr_name=None, user_id=None):
         else:
             messages.error(request, "Please correct the indicated errors and try again")
     else:
-        form = InvitationForm(instr=instr_name, exclude=exclusions)
-    
+        if instrument:
+            form = InvitationForm(instr=instrument.instrument, exclude=exclusions)
+        else:
+            form = InvitationForm(exclude=exclusions)
+        if not instrument:
+            form.fields["invited_instrument"].queryset = group.desired_instruments \
+                                                              .filter(user_plays__user__in=[user]) \
+                                                              .exclude(invitation__group=group)
+
     args = {"active": "dashboard", "form": form, "group": group,
             "instrument": instr_name, "user": user}
     args.update(csrf(request))
@@ -381,14 +394,16 @@ def add_invitation(request, group_id, user_id):
         # can see that the invitation was successful)
         try:
             Invitation.objects.create(inviting_user=request.user,
-                                    invited_user=user_to_invite,
-                                    invited_instrument=possible_to_invite[0],
-                                    group=group)
+                                      invited_user=user_to_invite,
+                                      invited_instrument=possible_to_invite[0],
+                                      group=group)
+            messages.success(request, "Your invitation was sent to %s" %user_to_invite.username)
             return redirect(reverse("group", kwargs={"id": group_id}))
         except IntegrityError:
             # in case an invitation has already been sent
             messages.error(request,
-            "%s has already been invited to the group %s!" %(user_to_invite.username, group.name))
+                           "%s has already been invited to the group %s!" %(user_to_invite.username,
+                                                                            group.name))
             return redirect(reverse("dashboard"))
     else:
         # there is more than one possible instrument. Redirect to the appropriate pre-populated

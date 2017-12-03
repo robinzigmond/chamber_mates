@@ -52,7 +52,7 @@ def new_group(request, username=""):
     """
     if request.method == "POST":
         form = GroupSetupForm(data=request.POST, user=request.user)
-        form.order_fields(["name", "instrument", "invited_user", "desired_instruments"])
+        form.order_fields(["name", "description", "instrument", "invited_user", "desired_instruments"])
         if form.is_valid():
             # create group and issue invitation (NB the group is created even if the user
             # declines the invitation - this is intentional)
@@ -101,7 +101,7 @@ def new_group(request, username=""):
             messages.error(request, "Please correct the indicated errors and try again")
     else:
         form = GroupSetupForm(user=request.user, initial={"invited_user": username})
-        form.order_fields(["name", "instrument", "invited_user", "desired_instruments"])
+        form.order_fields(["name", "description", "instrument", "invited_user", "desired_instruments"])
     
     args = {"active": "dashboard", "form": form}
     args.update(csrf(request))
@@ -181,9 +181,15 @@ def specific_invite(request, group_id, instr_name=None, user_id=None):
         else:
             form = InvitationForm(exclude=exclusions)
         if not instrument:
+            if Invitation.objects.filter(group=group, invited_user=user).exists():
+                # the user has already been invited - this can't happen via the usual interface
+                # but, as before, might be possible from manual entering of URLs. Handle this with
+                # an error message:
+                messages.error("invited_user", "%s has already been invited to join this group!" \
+                                %invitation.invited_user.username)
+                return redirect(reverse("group", kwargs={"id": group_id}))
             form.fields["invited_instrument"].queryset = group.desired_instruments \
-                                                              .filter(user_plays__user__in=[user]) \
-                                                              .exclude(invitation__group=group)
+                                                              .filter(user_plays__user__in=[user])
 
     args = {"active": "dashboard", "form": form, "group": group,
             "instrument": instr_name, "user": user}

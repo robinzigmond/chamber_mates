@@ -71,18 +71,18 @@
                     {% endif %}
                     <div id="dashboard-buttons">
                         {% if view == "inbox" %}
-                            <button class="btn btn-success" onclick="location.href='{% url "sent" %}';">
+                            <button class="btn btn-default" onclick="location.href='{% url "sent" %}';">
                                 Sent messages
                             </button>
                             <button class="btn btn-success" onclick="location.href='{% url "new_msg" %}';">
                                 New message
                             </button>
                         {% else %}
-                            <button class="btn btn-success" onclick="location.href='{% url "inbox" %}';">
+                            <button class="btn btn-default" onclick="location.href='{% url "inbox" %}';">
                                 Inbox
                             </button>
                         {% endif %}
-                        <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+                        <button class="btn btn-default" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
                     </div>
                 </div>
             </div>

@@ -444,7 +444,8 @@ def profiles(request, username):
                                             desired_instruments__user_plays__in=their_instruments) \
                                     .exclude(members__in=their_instruments) \
                                     .exclude(invitation__in=their_invites).distinct()
-    dist = distance(request.user.profile.location, user.profile.location).miles
+    dist = distance(request.user.profile.location.coords[::-1],
+                    user.profile.location.coords[::-1]).miles
 
     args = {"active": "dashboard", "editable": False, "groups": groups,
             "groups_to_invite": groups_to_invite, "distance": dist}

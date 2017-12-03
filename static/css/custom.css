@@ -127,7 +127,11 @@ a {
 #dashboard-buttons button {
     width: 125px;
     text-align: center;
-    margin: 10px;
+    margin: 10px 10px 10px 0;
+}
+
+#back {
+    display: block;
 }
 
 #group-invite-wrapper {
@@ -259,6 +263,10 @@ tr[id^="message-no-"] {
 
 .message-text p {
     white-space: pre-wrap;
+}
+
+#return-from-groups {
+    margin-left: 0;
 }
 
 #group-header {

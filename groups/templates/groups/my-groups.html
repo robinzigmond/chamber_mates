@@ -31,8 +31,12 @@
                 </div>
             </div>
         {% endif %}
-        <div id="dashboard-buttons">
-            <button class="btn btn-success" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="dashboard-buttons">
+                    <button class="btn btn-default" onclick="location.href='{% url "dashboard" %}';">Dashboard</button>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

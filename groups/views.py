@@ -253,7 +253,7 @@ def update_group(request, id):
     group = get_object_or_404(Group, pk=id)
     if not is_member(request.user, group):
         raise PermissionDenied
-   
+
     if request.method == "POST":
         form = GroupUpdateForm(request.POST)
         if form.is_valid():

@@ -8,8 +8,7 @@
                     {% else %}
                         Public profile for
                     {% endif %}
-                    {{ id.username }}
-                    {% if editable %}!{% endif %}
+                    {{ id.username }}{% if editable %}!{% endif %}
                 </h2>
                 {% if editable %}
                     <h3>Your public details:</h3>

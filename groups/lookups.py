@@ -24,6 +24,11 @@ class UserLookup(LookupChannel):
 # following StackOverflow thread:
 # https://stackoverflow.com/questions/36159455/create-multiple-classes-from-list-of-strings
 instrument_lookups = {}
+# the following code caused some issues in deployment, because the code in this file is run
+# when the application starts up, and therefore causes an error if the Instrument table does
+# not currently exist (for example when first deployed). This can be solved by commenting out
+# the loop before deploying, then running migrations and uncommenting - but in order to avoid
+# repeate commits it is easiest to control this by setting the value of an evironment variable
 if not os.getenv("DISABLE_INSTRUMENT_LOOKUP"):
     for instr in Instrument.objects.all():
         # need to do the (manual) Python equivalent of a Javascript IIFE, to make sure that

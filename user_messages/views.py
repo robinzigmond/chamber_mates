@@ -175,7 +175,7 @@ def reply(request, reply_to):
         if msg.user_to != request.user and msg.user_from != request.user:
             raise PermissionDenied    
         form = MessageForm(initial={"user_to": msg.user_from.username,
-                                    "title": "RE: "+msg.title,
+                                    "title": msg.title if msg.title[:4]=="RE: " else "RE: "+msg.title,
                                     "message": "\n\n----------Replying to----------\n"+msg.message})
         form.order_fields(["user_to", "title", "message"])
 

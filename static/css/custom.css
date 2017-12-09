@@ -1,5 +1,5 @@
 body {
-    background-color: #1e85ae;
+    background-color: #166483;
     color: #cce;
     padding-bottom: 80px;
 }
@@ -8,19 +8,27 @@ a {
     color: #aac;
 }
 
-.navbar-default {
+.navbar-default, ul.dropdown-menu, .open .dropdown a {
     background-color: skyblue;
     color: #07212c;
     border: 0;
 }
 
-.navbar-default .navbar-nav li.active a, .navbar-default .navbar-nav .open .dropdown a,
-.navbar-default .navbar-nav li.active a:hover, li.dropdown.open {
-    background-color: #1e85ae;
+.dropdown-menu li a {
+    color: #07212c;
+}
+
+.navbar-default .navbar-nav>li.active>a, .navbar-default .navbar-nav li.active .dropdown-menu {
+    background-color: #166483;
+    color: #aac;
+}
+
+.navbar-default .navbar-nav li.active .dropdown-menu a {
+    color: #aac;
 }
 
 .navbar-default .navbar-nav li.active a:hover {
-    color: #cce;
+    color: #aac;
 }
 
 .navbar-brand {
@@ -41,7 +49,7 @@ a {
     font-size: 15px;
 }
 
-#donate a {
+#donate a, table a {
     color: white;
 }
 
@@ -56,14 +64,10 @@ a {
 
 .message.success {
     background-color: darkolivegreen;
-    border-top: 3px dotted green;
-    border-bottom: 3px dotted green;
 }
 
 .message.error {
-    background-color: darkred;
-    border-top: 3px dotted red;
-    border-bottom: 3px dotted red;
+    background-color: #e60000;
 }
 
 .message.last {
@@ -202,7 +206,7 @@ a {
 
 .table {
     border: 3px solid white;
-    background-color: #0f4357;
+    background-color: #0b3241;
     margin-top: 20px;
 }
 

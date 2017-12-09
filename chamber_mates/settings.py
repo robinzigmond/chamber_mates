@@ -145,7 +145,6 @@ MAP_WIDGETS = {
     "GooglePointFieldWidget": (
         ("zoom", 15),
         ("mapCenterLocationName", "london"),
-        ("GooglePlaceAutocompleteOptions", {'componentRestrictions': {'country': 'uk'}}),
         ("markerFitZoom", 12),
     ),
     "GOOGLE_MAP_API_KEY": GOOGLE_MAP_API_KEY

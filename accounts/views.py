@@ -15,6 +15,7 @@ from django.db.models import F
 from django.conf import settings
 from django.contrib.gis.measure import Distance
 from django.contrib.gis.db.models.functions import Distance as get_distance
+from django.http import Http404
 from googlemaps import Client
 from geopy.distance import distance
 from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
@@ -29,7 +30,10 @@ def get_profile_details(user):
     (where it applies to the logged-in user) and the generic "profiles" pages where users can
     browse the profiles of other users:
     """
-    profile = get_object_or_404(User, pk=user.pk).profile
+    try:
+        profile = get_object_or_404(User, pk=user.pk).profile
+    except Profile.DoesNotExist:
+        raise Http404
     instruments = UserInstrument.objects.filter(user=user.pk)
     
     # use google maps API to get a nicely formatted address string:

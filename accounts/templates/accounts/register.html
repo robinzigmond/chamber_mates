@@ -1,5 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 {% load bootstrap_tags %}
+
+{% block load_media %}
+    <script src="{% static 'js/helptext.js' %}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="container">
         <div class="row">
@@ -19,4 +25,5 @@
             </div>
         </div>
     </div>
+
 {% endblock %}

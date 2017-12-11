@@ -26,8 +26,8 @@ class UserUpdateForm(forms.Form):
     """
     email = forms.EmailField()
     current_password = forms.CharField(widget=forms.PasswordInput, required=False)
-    new_password1 = forms.CharField(label="new password", widget=forms.PasswordInput, required=False)
-    new_password2 = forms.CharField(label="confirm new password", widget=forms.PasswordInput, required=False)
+    new_password1 = forms.CharField(label="New password", widget=forms.PasswordInput, required=False)
+    new_password2 = forms.CharField(label="Confirm new password", widget=forms.PasswordInput, required=False)
 
     # make sure we can pass the User instance in to the form
     def __init__(self, *args, **kwargs):
@@ -99,5 +99,5 @@ class UserInstrumentForm(forms.ModelForm):
         labels = {"standard": "Please select your approximate standard on this instrument",
                   "desired_instruments": """What instruments do you want to form a group with?
                                           Select as many as you like.""",
-                  "accepted_standards": """I'd be happy with players of these approximate standards
+                  "accepted_standards": """Which (approximate) standards do you want your partners to have?
                                            (select multiples if desired)"""}

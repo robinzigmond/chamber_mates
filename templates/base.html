@@ -8,7 +8,7 @@
         <title>Chamber Mates</title>
         <link rel="stylesheet" href="{% static 'lib/bootstrap-3.3.7-dist/css/bootstrap.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/custom.css' %}">
-        <link href="https://fonts.googleapis.com/css?family=Dancing+Script" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Raleway|Open+Sans" rel="stylesheet">
         <script type="text/javascript" src="{% static 'lib/jquery-3.2.1.min.js' %}"></script>
         <script type="text/javascript" src="{% static 'lib/bootstrap-3.3.7-dist/js/bootstrap.min.js' %}"></script>
         {% block load_media %}
@@ -96,5 +96,24 @@
             {% endif %}
             </div>
         {% endif %}
+
+        <script type="text/javascript">
+            $(function() {
+                var notificationHeight = 10;
+                {% if user_messages %}
+                    notificationHeight += 25;
+                {% endif %}
+                {% if new_matches %}
+                    notificationHeight += 25;
+                {% endif %}
+                {% if new_invites %}
+                    notificationHeight += 25;
+                {% endif %}
+                var cssValue = notificationHeight + "px";
+                $("body").css("padding-bottom", notificationHeight);
+                $("#notifications").css("height", notificationHeight);
+            });
+        </script>
+
     </body>
 </html>

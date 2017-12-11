@@ -18,16 +18,16 @@ class GroupSetupForm(forms.Form):
         choices = [(instr.pk, instr.instrument) for instr in options.all()]
         super(GroupSetupForm, self).__init__(*args, **kwargs)
         self.fields["instrument"] = forms.ChoiceField(choices=choices, widget=forms.RadioSelect,
-                                                      label="Instrument you will play")
+                                                      label="Instrument you will play:")
 
-    name = forms.CharField(max_length=100, label="Group name")
-    description = forms.CharField(max_length=500, label="Description of your group", required=False)
+    name = forms.CharField(max_length=100, label="Group name:")
+    description = forms.CharField(max_length=500, label="Description of your group:", required=False)
     invited_user = make_ajax_field(User, "username", "user_to_invite",
-                                   label="Invite another user",
+                                   label="Invite another user:",
                                    help_text="")
     desired_instruments=forms.ModelMultipleChoiceField(queryset=Instrument.objects.all(),
                                                        widget=forms.CheckboxSelectMultiple(),
-                                                       label="Other desired instruments",
+                                                       label="Other desired instruments:",
                                                        required=False)
 
 
@@ -39,11 +39,11 @@ class GroupUpdateForm(forms.Form):
     is no harder.
     """
 
-    name = forms.CharField(max_length=100, label="Group name")
-    description = forms.CharField(max_length=500, label="Description of your group", required=False)
+    name = forms.CharField(max_length=100, label="Group name:")
+    description = forms.CharField(max_length=500, label="Description of your group:", required=False)
     desired_instruments=forms.ModelMultipleChoiceField(queryset=Instrument.objects.all(),
                                                        widget=forms.CheckboxSelectMultiple(),
-                                                       label="Desired instruments",
+                                                       label="Desired instruments:",
                                                        required=False)    
 
 
@@ -78,6 +78,7 @@ class InvitationForm(forms.ModelForm):
         model = Invitation
         fields = ["group", "invited_instrument"]
         widgets = {"invited_instrument": forms.RadioSelect}
+        labels = {"invited_instrument": "Instrument you want them to play:"}
 
 
     def clean_invited_user(self):
@@ -110,6 +111,7 @@ class GroupMessageForm(forms.ModelForm):
         super(GroupMessageForm, self).__init__(*args, **kwargs)
         if new:
             self.fields["name"] = forms.CharField(max_length=200)
+            self.fields["name"].label = "Topic title"
     
     class Meta:
         model = GroupMessage

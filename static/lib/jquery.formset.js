@@ -4,7 +4,10 @@
 // 1. to enable smooth animation for adding elements (the call to insertBefore in the addButton's
 // click handler), I had to immediately hide the element, then show it with a transition
 // 2) for smooth animation of removals, while still removing the elemnts from the DOM,
-// I changed eg. row.remove() to row.hide(300, row.remove)
+// I changed eg. row.remove() to row.hide(500, row.remove)
+
+// Along similar lines, I also added some lines to make the screen scroll down to display the new form
+// when the button is clicked to add one. I see this as a significant improvement in the UX.
 
 // There appears to be a bug in the script - if a form is added, then filled out, but deleted before
 // clicking "submit", the deleted form's data is nonetheless saved in the database!
@@ -94,10 +97,10 @@
                         // Rather than remove this form from the DOM, we'll mark it as deleted
                         // and hide it, then let Django handle the deleting:
                         del.val('on');
-                        row.hide(300);
+                        row.hide(500);
                         forms = $('.' + options.formCssClass).not(':hidden');
                     } else {
-                        row.hide(300, row.remove);
+                        row.hide(500, row.remove);
                         // Update the TOTAL_FORMS count:
                         forms = $('.' + options.formCssClass).not('.formset-custom-template');
                         totalForms.val(forms.length);
@@ -205,7 +208,10 @@
                     buttonRow = $($(this).parents('tr.' + options.formCssClass + '-add').get(0) || this),
                     delCssSelector = $.trim(options.deleteCssClass).replace(/\s+/g, '.');
                 applyExtraClasses(row, formCount);
-                row.insertBefore(buttonRow).hide().show(300);
+                row.insertBefore(buttonRow).hide().show(500, function() {
+                    $("html, body").animate({scrollTop: $(this).offset().top},
+                                             700, "swing");
+                });
                 row.find(childElementSelector).each(function() {
                     updateElementIndex($(this), options.prefix, formCount);
                 });

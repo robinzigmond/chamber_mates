@@ -1,11 +1,16 @@
 body {
     background-color: #166483;
     color: #cce;
-    padding-bottom: 80px;
+    padding-bottom: 0px;
+    font-family: "Open Sans", sans-serif;
 }
 
 a {
     color: #aac;
+}
+
+nav {
+    font-family: "Raleway", sans-serif;
 }
 
 .navbar-default, ul.dropdown-menu, .open .dropdown a {
@@ -79,7 +84,7 @@ a {
     bottom: 0;
     right: 0;
     width: 100vw;
-    height: 75px;
+    height: 0px;
     z-index: 1;
     text-align: center;
     background-color: #dc5526;
@@ -94,15 +99,6 @@ a {
 #notifications a {
     color: white;
 }
-
-/*#new-messages a {
-    animation: flash 1s ease-in-out 0s infinite alternate;
-}
-
-@keyframes flash {
-    0% {opacity: 0;}
-    100% {opacity: 1;}
-}*/
 
 .media {
     text-align: center;
@@ -143,7 +139,7 @@ a {
 }
 
 #dashboard-buttons button {
-    width: 125px;
+    min-width: 125px;
     text-align: center;
     margin: 10px 10px 10px 0;
 }
@@ -177,10 +173,19 @@ a {
     color: darkred;
 }
 
-/*#location-mw-wrap {
-    max-width: 100vw;
-    min-width: 330px;
-}*/
+.help-block {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    color: black;
+    background-color: #737373;
+    padding: 5px;
+}
+
+.glyphicon-question-sign {
+    margin-left: 5px;
+    cursor: pointer;
+}
 
 #instruments-heading {
     color: white;
@@ -352,4 +357,10 @@ tr[id^="thread-no-"] {
 
 #new-post-form {
     display: none;
+}
+
+@media screen and (max-width: 695px) {
+    .mw-adress-input-wrap {
+        display: none;
+    }
 }

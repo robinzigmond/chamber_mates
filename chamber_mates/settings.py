@@ -39,14 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "django.contrib.gis",
     "mapwidgets",
-    "django_forms_bootstrap",
     "ajax_select",
     "anora",
     "home",
     "accounts",
     "user_messages",
     "donations",
-    "groups"
+    "groups",
+    "django_forms_bootstrap"
 ]
 
 MIDDLEWARE = [

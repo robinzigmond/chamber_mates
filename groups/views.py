@@ -61,7 +61,7 @@ def new_group(request, username=""):
             try:
                 invited_user = User.objects.get(username=form.cleaned_data["invited_user"])
                 if invited_user == request.user:
-                    form.add_error("name", "You can't invite yourself!")
+                    form.add_error("invited_user", "You can't invite yourself!")
                 else:
                     group.save()
                     # It should be allowable for the "desired_instruments" field to be left blank

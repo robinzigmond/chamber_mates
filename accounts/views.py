@@ -18,11 +18,11 @@ from django.contrib.gis.db.models.functions import Distance as get_distance
 from django.http import Http404
 from googlemaps import Client
 from geopy.distance import distance
-from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
-from .models import Profile, UserInstrument, Instrument, Match, Standard
 from groups.models import Group, Invitation
+from .forms import UserRegistrationForm, UserUpdateForm, ProfileForm, UserInstrumentForm
+from .models import Profile, UserInstrument, Match, Standard
 
-MATCHES_DISPLAY_LIMIT = 2  # small for testing purposes, will probably be 5 in production
+MATCHES_DISPLAY_LIMIT = 5  # can be lowered for testing purposes
 
 def get_profile_details(user):
     """

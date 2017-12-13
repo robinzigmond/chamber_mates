@@ -8,7 +8,7 @@ class UserLookup(LookupChannel):
     model = User
 
     def get_query(self, q, request):
-        return self.model.objects.filter(username__startswith=q)
+        return self.model.objects.filter(username__istartswith=q)
 
     def format_match(self, user):
         return "<span class='autocomplete-option'>%s</span>" % user.username
@@ -42,7 +42,7 @@ if not os.getenv("DISABLE_INSTRUMENT_LOOKUP"):
                 def get_query(self, q, request):
                     user_instrs = UserInstrument.objects.filter(instrument__instrument=instr_obj.instrument)
                     users_playing = self.model.objects.filter(userinstrument__pk__in=user_instrs)
-                    return users_playing.filter(username__startswith=q)
+                    return users_playing.filter(username__istartswith=q)
             
             name = "UserLookupWith"+instr_obj.instrument
             UserLookupWithInstrument.__name__ = str(name)

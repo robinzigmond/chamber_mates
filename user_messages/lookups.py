@@ -6,7 +6,7 @@ class UsernameLookup(LookupChannel):
     model = User
 
     def get_query(self, q, request):
-        return self.model.objects.filter(username__startswith=q)
+        return self.model.objects.filter(username__istartswith=q)
 
     def format_match(self, user):
         return "<span class='autocomplete-option'>%s</span>" % user.username

@@ -1,6 +1,6 @@
-#Chamber Mates
+# Chamber Mates
 
-##Introduction and core purpose
+## Introduction and core purpose
 
 This is a website built with [Django](https://www.djangoproject.com/). It aims to help musicians find others in their local area, with the aim of facilitating users coming together into small groups to play [chamber music](https://en.wikipedia.org/wiki/Chamber_music) together. Alongside this core functionality (which comprises several parts, as will be detailed below), the site aims to have a very "social" feel, which users able to send private messages to each other, as well as messages to private forums for each group that is formed on the site. 
 

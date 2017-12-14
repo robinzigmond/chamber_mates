@@ -1,5 +1,11 @@
 # Chamber Mates
 
+## Note for anyone testing or assessing this project:
+
+As will become clear from the description below, 99% of the functionality of the Chamber Mates site is only available to registered users. And when registering a test account, the value you will get out of the site depends almost entirely on how many other users match your declared preferences - and it is critical for this that you are close enough to other users. While testing the site I made a large number of test users, who are spread throughout England and Wales (but not Scotland), but mostly concentrated in the West Midlands of England and other Western areas. In order to see most features of the site more naturally, I would advise to set your location to be somewhere in this broad region.
+
+Given the relative sparsity of the site's current (fake) "users", I would also recommend making your search preferences as wide as possible to start with - look for players within 50 miles (not 5!), and reach out to a wide range of instruments and standards. Of course when the site has thousands of real users then there will be no need to state anything other than your actual preferences :)
+
 ## Introduction and core purpose
 
 This is a website built with [Django](https://www.djangoproject.com/). It aims to help musicians find others in their local area, with the aim of facilitating users coming together into small groups to play [chamber music](https://en.wikipedia.org/wiki/Chamber_music) together. Alongside this core functionality (which comprises several parts, as will be detailed below), the site aims to have a very "social" feel, which users able to send private messages to each other, as well as messages to private forums for each group that is formed on the site. 

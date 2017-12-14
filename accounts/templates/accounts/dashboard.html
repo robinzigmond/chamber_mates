@@ -13,8 +13,12 @@
                 {% if editable %}
                     <h3>Your public details:</h3>
                 {% endif %}
-                <div id="user-description"> 
-                    <p>"{{ profile.description }}"</p>
+                <div id="user-description">
+                    {% if profile.description %}
+                        <p>"{{ profile.description }}"</p>
+                    {% else %}
+                        <p>This user has not provided any additional information about themselves.</p>
+                    {% endif %}
                 </div>
                 {% if not editable %}
                     <p>Last login: {{ id.last_login }}</p>
